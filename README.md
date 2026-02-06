@@ -5,8 +5,11 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-blue?style=for-the-badge)](https://kustonaut.github.io/WealthPulse/)
 
 WealthPulse turns your broker statement exports into a beautiful, interactive HTML dashboard — no cloud, no subscriptions, **your data stays on your machine**.
+
+> **🌐 [Try the live demo →](https://kustonaut.github.io/WealthPulse/)** — no install, runs in your browser with sample data.
 
 ---
 
