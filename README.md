@@ -10,6 +10,69 @@ WealthPulse turns your broker statement exports into a beautiful, interactive HT
 
 ---
 
+## 📸 Screenshots
+
+### Dashboard — Dark Mode
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-hero.png" alt="WealthPulse Dashboard — Dark Mode" width="100%">
+</p>
+
+> Scrolling stock marquee • Live index strip • KPI cards • FIRE progress bar • Chart.js pie charts
+
+### Dashboard — Light Mode
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-light-hero.png" alt="WealthPulse Dashboard — Light Mode" width="100%">
+</p>
+
+> One-click theme toggle — switch between dark and light themes
+
+### Stock Marquee Ticker
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-marquee.png" alt="Live Stock Marquee" width="100%">
+</p>
+
+> Real-time scrolling marquee with your portfolio stocks, prices, and P&L arrows
+
+### Holdings Table
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-holdings.png" alt="Holdings Table" width="100%">
+</p>
+
+> Tabbed views: Stocks • Mutual Funds • NPS • EPFO • Top Movers — with verdict badges
+
+### Daily Email Brief
+
+<p align="center">
+  <img src="docs/screenshots/email-brief.png" alt="Daily Email Brief" width="480">
+</p>
+
+> Automated morning/evening portfolio summary delivered to your inbox — dark-mode email with indices, movers, MF summary & headlines
+
+### CLI
+
+<p align="center">
+  <img src="docs/screenshots/cli-demo.png" alt="CLI Demo" width="600">
+</p>
+
+> Rich CLI with `wealthpulse demo` — try it in 30 seconds, no setup needed
+
+<details>
+<summary>🖼️ Full Dashboard Screenshots (click to expand)</summary>
+
+#### Full Dashboard — Dark Mode
+<img src="docs/screenshots/dashboard-dark-full.png" alt="Full Dashboard Dark" width="100%">
+
+#### Full Dashboard — Light Mode
+<img src="docs/screenshots/dashboard-light-full.png" alt="Full Dashboard Light" width="100%">
+
+</details>
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
