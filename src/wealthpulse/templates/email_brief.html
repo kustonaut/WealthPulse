@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;margin:0 auto;background:#0d1117;">
+
+    <!-- Header -->
+    <tr><td style="padding:20px 24px;border-bottom:1px solid #30363d;">
+        <h1 style="margin:0;font-size:22px;background:linear-gradient(135deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+            💰 WealthPulse Daily Brief
+        </h1>
+        <p style="margin:4px 0 0;color:#8b949e;font-size:13px;">{{ date_display }} • {{ greeting }}</p>
+    </td></tr>
+
+    <!-- Index Strip -->
+    {% if index_data %}
+    <tr><td style="padding:16px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+            {% for name, d in index_data.items() %}
+                <td style="padding:8px;background:#161b22;border-radius:8px;text-align:center;{% if not loop.last %}border-right:4px solid #0d1117;{% endif %}">
+                    <div style="font-size:10px;color:#8b949e;text-transform:uppercase;">{{ name }}</div>
+                    <div style="font-size:16px;font-weight:700;color:#e6edf3;">{{ "{:,.1f}".format(d.price) }}</div>
+                    <div style="font-size:12px;color:{{ '#3fb950' if d.change_pct >= 0 else '#f85149' }};">
+                        {{ "▲" if d.change_pct >= 0 else "▼" }} {{ "{:.2f}".format(d.change_pct|abs) }}%
+                    </div>
+                </td>
+            {% endfor %}
+            </tr>
+        </table>
+    </td></tr>
+    {% endif %}
+
+    <!-- Portfolio Summary -->
+    <tr><td style="padding:0 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #30363d;border-radius:12px;overflow:hidden;">
+            <tr>
+                <td style="padding:16px;background:#161b22;width:50%;border-right:1px solid #30363d;">
+                    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;">Portfolio Value</div>
+                    <div style="font-size:24px;font-weight:700;color:#e6edf3;">{{ currency }}{{ equity_display }}</div>
+                </td>
+                <td style="padding:16px;background:#161b22;width:50%;">
+                    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;">Day's P&L</div>
+                    <div style="font-size:24px;font-weight:700;color:{{ '#3fb950' if day_pnl >= 0 else '#f85149' }};">
+                        {{ "+" if day_pnl >= 0 else "" }}{{ currency }}{{ day_pnl_display }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+
+    <!-- Top Movers in Portfolio -->
+    {% if portfolio_movers %}
+    <tr><td style="padding:20px 24px 8px;">
+        <h2 style="margin:0;font-size:15px;color:#e6edf3;">🔥 Your Portfolio Movers</h2>
+    </td></tr>
+    <tr><td style="padding:0 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
+            <tr style="border-bottom:1px solid #30363d;">
+                <td style="padding:8px 4px;color:#8b949e;font-size:11px;">STOCK</td>
+                <td style="padding:8px 4px;color:#8b949e;font-size:11px;text-align:right;">PRICE</td>
+                <td style="padding:8px 4px;color:#8b949e;font-size:11px;text-align:right;">CHANGE</td>
+                <td style="padding:8px 4px;color:#8b949e;font-size:11px;text-align:right;">P&L TODAY</td>
+            </tr>
+            {% for m in portfolio_movers %}
+            <tr style="border-bottom:1px solid #21262d;">
+                <td style="padding:8px 4px;font-weight:600;color:#e6edf3;">{{ m.symbol }}</td>
+                <td style="padding:8px 4px;text-align:right;color:#b1bac4;">{{ "{:,.2f}".format(m.price) }}</td>
+                <td style="padding:8px 4px;text-align:right;color:{{ '#3fb950' if m.change_pct >= 0 else '#f85149' }};">
+                    {{ "+" if m.change_pct >= 0 else "" }}{{ "{:.2f}".format(m.change_pct) }}%
+                </td>
+                <td style="padding:8px 4px;text-align:right;color:{{ '#3fb950' if m.day_pnl >= 0 else '#f85149' }};">
+                    {{ "+" if m.day_pnl >= 0 else "" }}{{ "{:,.0f}".format(m.day_pnl) }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </td></tr>
+    {% endif %}
+
+    <!-- MF Summary -->
+    {% if mf_display %}
+    <tr><td style="padding:20px 24px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #30363d;border-radius:12px;overflow:hidden;">
+            <tr>
+                <td style="padding:14px;background:#161b22;width:50%;border-right:1px solid #30363d;">
+                    <div style="font-size:11px;color:#8b949e;">MUTUAL FUNDS</div>
+                    <div style="font-size:18px;font-weight:700;">{{ currency }}{{ mf_display }}</div>
+                </td>
+                <td style="padding:14px;background:#161b22;width:50%;">
+                    <div style="font-size:11px;color:#8b949e;">MF P&L</div>
+                    <div style="font-size:18px;font-weight:700;color:{{ '#3fb950' if mf_pnl >= 0 else '#f85149' }};">
+                        {{ "+" if mf_pnl >= 0 else "" }}{{ currency }}{{ mf_pnl_display }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+    {% endif %}
+
+    <!-- Market Gainers/Losers -->
+    {% if top_gainers or top_losers %}
+    <tr><td style="padding:20px 24px 8px;">
+        <h2 style="margin:0;font-size:15px;color:#e6edf3;">📊 Market Movers</h2>
+    </td></tr>
+    <tr><td style="padding:0 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                {% if top_gainers %}
+                <td style="vertical-align:top;width:50%;padding-right:8px;">
+                    <div style="font-size:11px;color:#3fb950;padding:4px 0;">TOP GAINERS</div>
+                    {% for g in top_gainers %}
+                    <div style="padding:4px 0;font-size:12px;border-bottom:1px solid #21262d;">
+                        <span style="color:#e6edf3;">{{ g.symbol }}</span>
+                        <span style="float:right;color:#3fb950;">+{{ "{:.1f}".format(g.change_pct) }}%</span>
+                    </div>
+                    {% endfor %}
+                </td>
+                {% endif %}
+                {% if top_losers %}
+                <td style="vertical-align:top;width:50%;padding-left:8px;">
+                    <div style="font-size:11px;color:#f85149;padding:4px 0;">TOP LOSERS</div>
+                    {% for l in top_losers %}
+                    <div style="padding:4px 0;font-size:12px;border-bottom:1px solid #21262d;">
+                        <span style="color:#e6edf3;">{{ l.symbol }}</span>
+                        <span style="float:right;color:#f85149;">{{ "{:.1f}".format(l.change_pct) }}%</span>
+                    </div>
+                    {% endfor %}
+                </td>
+                {% endif %}
+            </tr>
+        </table>
+    </td></tr>
+    {% endif %}
+
+    <!-- News -->
+    {% if news %}
+    <tr><td style="padding:20px 24px 8px;">
+        <h2 style="margin:0;font-size:15px;color:#e6edf3;">📰 Headlines</h2>
+    </td></tr>
+    <tr><td style="padding:0 24px;">
+        {% for category, items in news.items() %}
+        <div style="font-size:10px;color:#58a6ff;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;">{{ category }}</div>
+        {% for item in items %}
+        <div style="padding:4px 0;border-bottom:1px solid #21262d;">
+            <a href="{{ item.link }}" style="color:#b1bac4;text-decoration:none;font-size:12px;">{{ item.title }}</a>
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </td></tr>
+    {% endif %}
+
+    <!-- Footer -->
+    <tr><td style="padding:24px;text-align:center;border-top:1px solid #30363d;margin-top:16px;">
+        <p style="margin:0;color:#8b949e;font-size:11px;">
+            Powered by <a href="https://github.com/your-username/WealthPulse" style="color:#58a6ff;text-decoration:none;">WealthPulse</a>
+            • Data from yfinance • Not financial advice
+        </p>
+    </td></tr>
+</table>
+</body>
+</html>

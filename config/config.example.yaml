@@ -1,0 +1,159 @@
+# ============================================================
+# WealthPulse Configuration
+# Copy this file to config.yaml and fill in your details
+# ============================================================
+
+# --- Your Profile ---
+profile:
+  name: "Your Name"
+  age: 30
+  # Currency: INR, USD, EUR, GBP
+  currency: "INR"
+  # USD to INR rate (for US holdings conversion)
+  usd_to_inr: 87.50
+
+# --- FIRE Planning ---
+fire:
+  target_amount: 100000000        # ₹10 Cr (in base currency units)
+  target_age: 45
+  monthly_expenses: 100000        # ₹1 Lakh/month
+  expected_return_pct: 12         # Annual expected return %
+  inflation_pct: 6                # Annual inflation %
+
+# --- Broker Configurations ---
+# Enable only the brokers you use. WealthPulse will parse their statements.
+brokers:
+  groww:
+    enabled: true
+    # Groww exports XLSX with headers: Stock Name, ISIN, Quantity, Avg buy price, Buy value, Closing price, Closing value
+    # Header row is auto-detected (looks for "Stock Name")
+
+  zerodha:
+    enabled: true
+    # Zerodha Console exports XLSX with headers: Symbol, ISIN, Sector, Qty Available, ..., Average Price, Previous Closing Price
+    # Header row is auto-detected (looks for "Symbol")
+
+  angel_one:
+    enabled: false
+    # Angel One (Angel Broking) exports CSV/XLSX
+    # File patterns: AngelOne_*, AngelBroking_*, angel_one_*
+    # Headers: Symbol/Script Name, Qty/Quantity, Avg Price, Market Price
+
+  upstox:
+    enabled: false
+    # Upstox exports CSV/XLSX
+    # File patterns: Upstox_*, upstox_*
+    # Handles NSE_EQ: prefix and _EQ suffix automatically
+
+  icici_direct:
+    enabled: false
+    # ICICI Direct exports CSV/XLSX
+    # File patterns: ICICIDirect_*, ICICI_Direct_*, icici_direct_*
+    # Handles NSE:/BSE: prefix automatically
+
+  hdfc_securities:
+    enabled: false
+    # HDFC Securities exports CSV/XLSX
+    # File patterns: HDFC_Securities_*, HDFCSec_*, hdfc_sec_*
+
+  kotak_securities:
+    enabled: false
+    # Kotak Securities / Kotak Neo exports CSV/XLSX
+    # File patterns: Kotak_*, KotakSec_*, KotakNeo_*
+
+  dhan:
+    enabled: false
+    # Dhan broker exports CSV/XLSX
+    # File patterns: Dhan_*, dhan-holdings*
+    # Handles NSE-SYMBOL prefix format
+
+  five_paisa:
+    enabled: false
+    # 5paisa exports CSV/XLSX
+    # File patterns: 5paisa_*, 5Paisa_*, fivepaisa_*
+
+  mutual_funds:
+    enabled: true
+    # MF Central / Groww MF export: Scheme Name, AMC, Category, Sub Category, Folio Number, Source, Units, Invested Value, Current Value, Returns, XIRR
+    # Header row auto-detected (looks for "Scheme Name")
+
+  fidelity:
+    enabled: false
+    # Fidelity NetBenefits PDF — parses ESPP/RSU holdings
+    # Extracts: symbol, shares, price, value
+
+  morgan_stanley:
+    enabled: false
+    # Morgan Stanley StockPlan Connect PDF
+    # Extracts: shares, share price, share value from closing section
+
+  nps:
+    enabled: false
+    # NPS Transaction Statement PDF from CRA (npscra.nsdl.co.in)
+    # File patterns: NPS_*.pdf, NSDL_NPS_*.pdf, TransactionStatement_*.pdf
+    # Extracts: PRAN, scheme, fund manager, asset class, NAV, units, corpus
+
+  epfo:
+    enabled: false
+    # EPFO e-Passbook PDF / XLSX / CSV from passbook.epfindia.gov.in
+    # File patterns: EPFO_*.pdf, EPF_Passbook*.pdf, UAN_Passbook*.pdf
+    # Extracts: UAN, member ID, employer, EE/ER/pension shares, total balance
+
+# --- Non-Equity Assets (update manually each month) ---
+non_equity:
+  nps: 0
+  epf: 0
+  ppf: 0
+  fd: 0
+  bonds: 0
+  gold: 0
+  real_estate: 0
+  cash: 0
+  crypto: 0
+
+# --- Stock Verdicts ---
+# Optional: your buy/hold/exit verdicts per stock
+# These persist across statement updates — edit as needed
+# Format: SYMBOL: {verdict, risk, sector, pe, roe, roce, target_1m, target_1y, target_5y}
+# Example:
+# verdicts:
+#   HDFCBANK:
+#     verdict: BUY
+#     risk: Low
+#     sector: Banking
+#     pe: 19.4
+#     roe: 14.4
+#     roce: 7.5
+#     target_1m: 960
+#     target_1y: 1100
+#     target_5y: 1600
+
+# --- Email Alerts ---
+email:
+  enabled: false
+  # Gmail SMTP with App Passwords (not your main password)
+  # Guide: https://support.google.com/accounts/answer/185833
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 465
+  sender_email: ""
+  app_password: ""        # Gmail App Password (16 chars, no spaces)
+  recipient_email: ""     # Can be same as sender
+
+# --- News Feeds (RSS) ---
+# Customize which market news to include in daily briefs
+news_feeds:
+  "NIFTY 50": "https://news.google.com/rss/search?q=nifty+50+stock+market&hl=en-IN"
+  "Sensex": "https://news.google.com/rss/search?q=sensex+bse+market&hl=en-IN"
+  "Market": "https://news.google.com/rss/search?q=indian+stock+market+today&hl=en-IN"
+  "RBI": "https://news.google.com/rss/search?q=RBI+monetary+policy+interest+rate&hl=en-IN"
+  "IPO": "https://news.google.com/rss/search?q=IPO+listing+india&hl=en-IN"
+  "Gold": "https://news.google.com/rss/search?q=gold+price+india+today&hl=en-IN"
+
+# --- Dashboard Settings ---
+dashboard:
+  theme: "dark"           # dark or light
+  show_fire_progress: true
+  show_sector_chart: true
+  show_market_movers: true
+  show_news: true
+  top_n_movers: 5         # Number of gainers/losers to show

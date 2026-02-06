@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wealthpulse"
+version = "1.0.0"
+description = "Open-source Indian portfolio tracker with automated daily briefs, interactive dashboards, and FIRE planning"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "WealthPulse Contributors"}
+]
+keywords = ["portfolio", "finance", "tracker", "india", "FIRE", "stocks", "mutual-funds", "net-worth"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+]
+dependencies = [
+    "openpyxl>=3.1.0",
+    "PyPDF2>=3.0.0",
+    "yfinance>=0.2.30",
+    "feedparser>=6.0.0",
+    "jinja2>=3.1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "black"]
+
+[project.scripts]
+wealthpulse = "wealthpulse.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/your-username/WealthPulse"
+Documentation = "https://github.com/your-username/WealthPulse#readme"
+Issues = "https://github.com/your-username/WealthPulse/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
