@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WealthPulse — Portfolio Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2333;
+            --bg-hover: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #b1bac4;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --green-bg: #0d2818;
+            --red: #f85149;
+            --red-bg: #2d0a0a;
+            --yellow: #d29922;
+            --yellow-bg: #2d2200;
+            --purple: #bc8cff;
+            --orange: #f0883e;
+            --teal: #39d2c0;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-card: #ffffff;
+            --bg-hover: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+            --border: #d1d5db;
+            --accent: #2563eb;
+            --green: #16a34a;
+            --green-bg: #dcfce7;
+            --red: #dc2626;
+            --red-bg: #fee2e2;
+            --yellow: #ca8a04;
+            --yellow-bg: #fef9c3;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header .meta { color: var(--text-muted); font-size: 14px; }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); }
+        .kpi-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+        .kpi-card .sub { font-size: 13px; color: var(--text-secondary); }
+        .kpi-card.green .value { color: var(--green); }
+        .kpi-card.red .value { color: var(--red); }
+
+        /* Section */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Charts grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .chart-card h3 { font-size: 15px; color: var(--text-secondary); margin-bottom: 12px; }
+        .chart-card canvas { max-height: 300px; }
+
+        /* Tables */
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        tr:hover { background: var(--bg-hover); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-green { color: var(--green) !important; }
+        .text-red { color: var(--red) !important; }
+        .text-yellow { color: var(--yellow) !important; }
+        .text-accent { color: var(--accent) !important; }
+        .text-orange { color: var(--orange) !important; }
+        .text-purple { color: var(--purple) !important; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-buy { background: var(--green-bg); color: var(--green); }
+        .badge-hold { background: var(--yellow-bg); color: var(--yellow); }
+        .badge-exit { background: var(--red-bg); color: var(--red); }
+
+        /* FIRE Progress */
+        .fire-bar-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+            margin: 12px 0;
+            position: relative;
+        }
+        .fire-bar {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            transition: width 1s ease;
+        }
+
+        /* Index ticker strip */
+        .ticker-strip {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 12px 0;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+        .ticker-strip::-webkit-scrollbar { display: none; }
+        .ticker-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            flex-shrink: 0;
+            min-width: 140px;
+        }
+        .ticker-item .name { font-size: 11px; color: var(--text-muted); }
+        .ticker-item .price { font-size: 16px; font-weight: 600; }
+        .ticker-item .change { font-size: 12px; }
+
+        /* Marquee Ticker */
+        .marquee-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
+            height: 36px;
+        }
+        .marquee-container::before,
+        .marquee-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .marquee-container::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--bg-secondary), transparent);
+        }
+        .marquee-container::after {
+            right: 0;
+            background: linear-gradient(270deg, var(--bg-secondary), transparent);
+        }
+        .marquee-track {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            width: max-content;
+            animation: marquee-scroll var(--marquee-speed, 60s) linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+        .marquee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .marquee-item .m-symbol {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .marquee-item .m-price {
+            color: var(--text-secondary);
+        }
+        .marquee-item .m-change {
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .marquee-item .m-dot {
+            color: var(--text-muted);
+            opacity: 0.3;
+            margin: 0 4px;
+        }
+        @keyframes marquee-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* News */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+        .news-category { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .news-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .news-item:last-child { border-bottom: none; }
+        .news-item a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+        .news-item a:hover { color: var(--accent); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Sort */
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { color: var(--accent); }
+        th.sortable::after { content: ' ⇅'; font-size: 10px; opacity: 0.5; }
+
+        /* Search / Filter */
+        .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            width: 250px;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .action-btn:active { transform: translateY(0); }
+        .action-btn .icon { font-size: 16px; }
+        .action-btn.primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .action-btn.primary:hover { opacity: 0.9; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-left: 4px solid var(--green); }
+        .toast.error { border-left: 4px solid var(--red); }
+        .toast.info { border-left: 4px solid var(--accent); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.25s;
+        }
+        .modal-overlay.show .modal { transform: scale(1); }
+        .modal h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
+        .modal .cmd-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 13px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .modal .cmd-box button {
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .modal .cmd-box button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+            .kpi-card .value { font-size: 22px; }
+            .header { flex-direction: column; gap: 12px; }
+            .action-bar { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <h1>💰 WealthPulse</h1>
+            <div class="meta">Demo Portfolio • 07 Feb 2026</div>
+        </div>
+        <div class="action-bar">
+            <button class="action-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle dark/light mode">
+                <span class="icon" id="themeIcon">🌙</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+            <button class="action-btn" onclick="showEmailModal()" title="Send email summary">
+                <span class="icon">📧</span>
+                <span>Email</span>
+            </button>
+            <button class="action-btn primary" onclick="downloadExcel()" title="Download Excel report">
+                <span class="icon">📥</span>
+                <span>Excel</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- EMAIL MODAL -->
+    <div class="modal-overlay" id="emailModal" onclick="if(event.target===this)closeEmailModal()">
+        <div class="modal">
+            <h3>📧 Send Portfolio Summary</h3>
+            
+            <p>Email is not configured yet. Set it up to receive portfolio summaries directly in your inbox.</p>
+            <div class="cmd-box">
+                <span>wealthpulse setup</span>
+                <button onclick="copyCmd('wealthpulse setup')">📋 Copy</button>
+            </div>
+            <p>Or run the email command after setup:</p>
+            <div class="cmd-box">
+                <span>wealthpulse email</span>
+                <button onclick="copyCmd('wealthpulse email')">📋 Copy</button>
+            </div>
+            <div class="modal-actions">
+                <button class="action-btn" onclick="closeEmailModal()">Close</button>
+                <button class="action-btn primary" onclick="sendEmailViaMailto()">📧 Open Mail Client</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- STOCK MARQUEE -->
+    
+    <div class="marquee-container" style="--marquee-speed: 60s">
+        <div class="marquee-track">
+            
+            <span class="marquee-item">
+                <span class="m-symbol">SBIN</span>
+                <span class="m-price">₹1,066.40</span>
+                <span class="m-change text-green">
+                    +97.5%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">MARUTI</span>
+                <span class="m-price">₹14,997.00</span>
+                <span class="m-change text-green">
+                    +53.0%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ICICIBANK</span>
+                <span class="m-price">₹1,406.10</span>
+                <span class="m-change text-green">
+                    +52.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TITAN</span>
+                <span class="m-price">₹4,141.00</span>
+                <span class="m-change text-green">
+                    +39.0%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">INFY</span>
+                <span class="m-price">₹1,507.10</span>
+                <span class="m-change text-green">
+                    +9.2%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TCS</span>
+                <span class="m-price">₹2,941.60</span>
+                <span class="m-change text-red">
+                    -13.0%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">BHARTIARTL</span>
+                <span class="m-price">₹2,038.40</span>
+                <span class="m-change text-green">
+                    +139.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">LT</span>
+                <span class="m-price">₹4,068.10</span>
+                <span class="m-change text-green">
+                    +42.7%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">HCLTECH</span>
+                <span class="m-price">₹1,593.70</span>
+                <span class="m-change text-green">
+                    +24.5%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">RELIANCE</span>
+                <span class="m-price">₹1,450.80</span>
+                <span class="m-change text-red">
+                    -40.8%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">SUNPHARMA</span>
+                <span class="m-price">₹1,695.10</span>
+                <span class="m-change text-green">
+                    +54.1%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ITC</span>
+                <span class="m-price">₹325.80</span>
+                <span class="m-change text-green">
+                    +1.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ASIANPAINT</span>
+                <span class="m-price">₹2,401.10</span>
+                <span class="m-change text-red">
+                    -25.0%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">HDFCBANK</span>
+                <span class="m-price">₹941.10</span>
+                <span class="m-change text-red">
+                    -38.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TATAMOTORS</span>
+                <span class="m-price">₹735.20</span>
+                <span class="m-change text-green">
+                    +14.9%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ADANIENT</span>
+                <span class="m-price">₹2,226.40</span>
+                <span class="m-change text-red">
+                    -7.2%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TATASTEEL</span>
+                <span class="m-price">₹197.06</span>
+                <span class="m-change text-green">
+                    +71.4%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">WIPRO</span>
+                <span class="m-price">₹230.72</span>
+                <span class="m-change text-red">
+                    -45.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">BAJFINANCE</span>
+                <span class="m-price">₹981.70</span>
+                <span class="m-change text-red">
+                    -85.6%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">NESTLEIND</span>
+                <span class="m-price">₹1,303.30</span>
+                <span class="m-change text-red">
+                    -94.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            
+            
+            <span class="marquee-item">
+                <span class="m-symbol">SBIN</span>
+                <span class="m-price">₹1,066.40</span>
+                <span class="m-change text-green">
+                    +97.5%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">MARUTI</span>
+                <span class="m-price">₹14,997.00</span>
+                <span class="m-change text-green">
+                    +53.0%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ICICIBANK</span>
+                <span class="m-price">₹1,406.10</span>
+                <span class="m-change text-green">
+                    +52.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TITAN</span>
+                <span class="m-price">₹4,141.00</span>
+                <span class="m-change text-green">
+                    +39.0%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">INFY</span>
+                <span class="m-price">₹1,507.10</span>
+                <span class="m-change text-green">
+                    +9.2%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TCS</span>
+                <span class="m-price">₹2,941.60</span>
+                <span class="m-change text-red">
+                    -13.0%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">BHARTIARTL</span>
+                <span class="m-price">₹2,038.40</span>
+                <span class="m-change text-green">
+                    +139.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">LT</span>
+                <span class="m-price">₹4,068.10</span>
+                <span class="m-change text-green">
+                    +42.7%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">HCLTECH</span>
+                <span class="m-price">₹1,593.70</span>
+                <span class="m-change text-green">
+                    +24.5%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">RELIANCE</span>
+                <span class="m-price">₹1,450.80</span>
+                <span class="m-change text-red">
+                    -40.8%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">SUNPHARMA</span>
+                <span class="m-price">₹1,695.10</span>
+                <span class="m-change text-green">
+                    +54.1%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ITC</span>
+                <span class="m-price">₹325.80</span>
+                <span class="m-change text-green">
+                    +1.8%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ASIANPAINT</span>
+                <span class="m-price">₹2,401.10</span>
+                <span class="m-change text-red">
+                    -25.0%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">HDFCBANK</span>
+                <span class="m-price">₹941.10</span>
+                <span class="m-change text-red">
+                    -38.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TATAMOTORS</span>
+                <span class="m-price">₹735.20</span>
+                <span class="m-change text-green">
+                    +14.9%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">ADANIENT</span>
+                <span class="m-price">₹2,226.40</span>
+                <span class="m-change text-red">
+                    -7.2%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">TATASTEEL</span>
+                <span class="m-price">₹197.06</span>
+                <span class="m-change text-green">
+                    +71.4%
+                    ▲
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">WIPRO</span>
+                <span class="m-price">₹230.72</span>
+                <span class="m-change text-red">
+                    -45.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">BAJFINANCE</span>
+                <span class="m-price">₹981.70</span>
+                <span class="m-change text-red">
+                    -85.6%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+            <span class="marquee-item">
+                <span class="m-symbol">NESTLEIND</span>
+                <span class="m-price">₹1,303.30</span>
+                <span class="m-change text-red">
+                    -94.1%
+                    ▼
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            
+        </div>
+    </div>
+    
+
+    <!-- INDEX TICKER STRIP -->
+    
+    <div class="ticker-strip">
+        
+        <div class="ticker-item">
+            <div class="name">NIFTY 50</div>
+            <div class="price">25,693.70</div>
+            <div class="change text-green">
+                +0.20%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">SENSEX</div>
+            <div class="price">83,580.40</div>
+            <div class="change text-green">
+                +0.32%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">NIFTY Bank</div>
+            <div class="price">60,120.55</div>
+            <div class="change text-green">
+                +0.09%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">NIFTY IT</div>
+            <div class="price">35,611.05</div>
+            <div class="change text-red">
+                -1.47%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">NIFTY Midcap</div>
+            <div class="price">59,502.70</div>
+            <div class="change text-red">
+                -0.02%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">India VIX</div>
+            <div class="price">11.94</div>
+            <div class="change text-red">
+                -1.89%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">Gold (INR/10g)</div>
+            <div class="price">4,974.00</div>
+            <div class="change text-green">
+                +2.32%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">Silver (USD)</div>
+            <div class="price">77.11</div>
+            <div class="change text-green">
+                +0.76%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">Crude Oil</div>
+            <div class="price">63.52</div>
+            <div class="change text-green">
+                +0.36%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">USD/INR</div>
+            <div class="price">90.56</div>
+            <div class="change text-green">
+                +0.48%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">US 10Y Yield</div>
+            <div class="price">4.21</div>
+            <div class="change text-red">
+                -0.10%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">S&P 500</div>
+            <div class="price">6,932.30</div>
+            <div class="change text-green">
+                +1.97%
+            </div>
+        </div>
+        
+        <div class="ticker-item">
+            <div class="name">NASDAQ</div>
+            <div class="price">23,031.21</div>
+            <div class="change text-green">
+                +2.18%
+            </div>
+        </div>
+        
+    </div>
+    
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">💰 Net Worth</div>
+            <div class="value">₹48.28 L</div>
+            <div class="sub">20 stocks + 8 MFs</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="label">📈 Total P&L</div>
+            <div class="value">+₹2,473</div>
+            <div class="sub">0.3% overall return</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">📊 Equity Portfolio</div>
+            <div class="value">₹7.72 L</div>
+            <div class="sub">19/20 prices live</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">📊 Mutual Funds</div>
+            <div class="value">₹10.50 L</div>
+            <div class="sub">XIRR avg 19.0%</div>
+        </div>
+        
+        <div class="kpi-card">
+            <div class="label">🔥 FIRE Progress</div>
+            <div class="value">10%</div>
+            <div class="sub">₹5.00 Cr by age 45</div>
+        </div>
+        
+        
+        <div class="kpi-card">
+            <div class="label">🇺🇸 US Holdings</div>
+            <div class="value">$3.9K</div>
+            <div class="sub">2 stock(s)</div>
+        </div>
+        
+    </div>
+
+    <!-- FIRE PROGRESS BAR -->
+    
+    <div class="section">
+        <h2>🔥 FIRE Journey — ₹5.00 Cr by age 45</h2>
+        <div class="fire-bar-container">
+            <div class="fire-bar" style="width: 9.656698%">
+                9.7% — 13 years left
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            <span>₹0</span>
+            <span>Current: ₹48.28 L</span>
+            <span>Target: ₹5.00 Cr</span>
+        </div>
+    </div>
+    
+
+    <!-- CHARTS -->
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Asset Allocation</h3>
+            <canvas id="assetPieChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Sector Breakdown</h3>
+            <canvas id="sectorPieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- TABS: Stocks | Mutual Funds | NPS | EPFO | Market Movers -->
+    <div class="section">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('stocks')">📊 Stocks (20)</div>
+            <div class="tab" onclick="switchTab('mf')">📈 Mutual Funds (8)</div>
+            <div class="tab" onclick="switchTab('nps')">🏛️ NPS (3)</div>
+            <div class="tab" onclick="switchTab('epfo')">🏦 EPFO (1)</div>
+            <div class="tab" onclick="switchTab('movers')">🔥 Market Movers</div>
+        </div>
+
+        <!-- Stocks Tab -->
+        <div id="tab-stocks" class="tab-content active">
+            <div class="controls">
+                <input type="text" class="search-input" id="stockSearch" placeholder="🔍 Search stocks..." oninput="filterTable('stocksTable', this.value)">
+            </div>
+            <div class="table-wrapper">
+                <table id="stocksTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('stocksTable', 0)">#</th>
+                            <th class="sortable" onclick="sortTable('stocksTable', 1)">Symbol</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 2)">Qty</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 3)">Avg Price</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 4)">CMP</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 5)">Invested</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 6)">Current</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 7)">P&L</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 8)">P&L %</th>
+                            <th class="sortable text-center" onclick="sortTable('stocksTable', 9)">Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1</td>
+                            <td style="font-weight:600; color:var(--text-primary)">SBIN</td>
+                            <td class="text-right">80</td>
+                            <td class="text-right">540.00</td>
+                            <td class="text-right">1,066.40</td>
+                            <td class="text-right">43,200</td>
+                            <td class="text-right">85,312</td>
+                            <td class="text-right text-green">
+                                +42,112
+                            </td>
+                            <td class="text-right text-green">
+                                +97.5%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>2</td>
+                            <td style="font-weight:600; color:var(--text-primary)">MARUTI</td>
+                            <td class="text-right">5</td>
+                            <td class="text-right">9,800.00</td>
+                            <td class="text-right">14,997.00</td>
+                            <td class="text-right">49,000</td>
+                            <td class="text-right">74,985</td>
+                            <td class="text-right text-green">
+                                +25,985
+                            </td>
+                            <td class="text-right text-green">
+                                +53.0%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>3</td>
+                            <td style="font-weight:600; color:var(--text-primary)">ICICIBANK</td>
+                            <td class="text-right">50</td>
+                            <td class="text-right">920.00</td>
+                            <td class="text-right">1,406.10</td>
+                            <td class="text-right">46,000</td>
+                            <td class="text-right">70,305</td>
+                            <td class="text-right text-green">
+                                +24,305
+                            </td>
+                            <td class="text-right text-green">
+                                +52.8%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>4</td>
+                            <td style="font-weight:600; color:var(--text-primary)">TITAN</td>
+                            <td class="text-right">15</td>
+                            <td class="text-right">2,980.00</td>
+                            <td class="text-right">4,141.00</td>
+                            <td class="text-right">44,700</td>
+                            <td class="text-right">62,115</td>
+                            <td class="text-right text-green">
+                                +17,415
+                            </td>
+                            <td class="text-right text-green">
+                                +39.0%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>5</td>
+                            <td style="font-weight:600; color:var(--text-primary)">INFY</td>
+                            <td class="text-right">40</td>
+                            <td class="text-right">1,380.00</td>
+                            <td class="text-right">1,507.10</td>
+                            <td class="text-right">55,200</td>
+                            <td class="text-right">60,284</td>
+                            <td class="text-right text-green">
+                                +5,084
+                            </td>
+                            <td class="text-right text-green">
+                                +9.2%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>6</td>
+                            <td style="font-weight:600; color:var(--text-primary)">TCS</td>
+                            <td class="text-right">15</td>
+                            <td class="text-right">3,380.00</td>
+                            <td class="text-right">2,941.60</td>
+                            <td class="text-right">50,700</td>
+                            <td class="text-right">44,124</td>
+                            <td class="text-right text-red">
+                                -6,576
+                            </td>
+                            <td class="text-right text-red">
+                                -13.0%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>7</td>
+                            <td style="font-weight:600; color:var(--text-primary)">BHARTIARTL</td>
+                            <td class="text-right">20</td>
+                            <td class="text-right">850.00</td>
+                            <td class="text-right">2,038.40</td>
+                            <td class="text-right">17,000</td>
+                            <td class="text-right">40,768</td>
+                            <td class="text-right text-green">
+                                +23,768
+                            </td>
+                            <td class="text-right text-green">
+                                +139.8%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY MORE</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>8</td>
+                            <td style="font-weight:600; color:var(--text-primary)">LT</td>
+                            <td class="text-right">10</td>
+                            <td class="text-right">2,850.00</td>
+                            <td class="text-right">4,068.10</td>
+                            <td class="text-right">28,500</td>
+                            <td class="text-right">40,681</td>
+                            <td class="text-right text-green">
+                                +12,181
+                            </td>
+                            <td class="text-right text-green">
+                                +42.7%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>9</td>
+                            <td style="font-weight:600; color:var(--text-primary)">HCLTECH</td>
+                            <td class="text-right">25</td>
+                            <td class="text-right">1,280.00</td>
+                            <td class="text-right">1,593.70</td>
+                            <td class="text-right">32,000</td>
+                            <td class="text-right">39,842</td>
+                            <td class="text-right text-green">
+                                +7,842
+                            </td>
+                            <td class="text-right text-green">
+                                +24.5%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>10</td>
+                            <td style="font-weight:600; color:var(--text-primary)">RELIANCE</td>
+                            <td class="text-right">25</td>
+                            <td class="text-right">2,450.00</td>
+                            <td class="text-right">1,450.80</td>
+                            <td class="text-right">61,250</td>
+                            <td class="text-right">36,270</td>
+                            <td class="text-right text-red">
+                                -24,980
+                            </td>
+                            <td class="text-right text-red">
+                                -40.8%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY MORE</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>11</td>
+                            <td style="font-weight:600; color:var(--text-primary)">SUNPHARMA</td>
+                            <td class="text-right">20</td>
+                            <td class="text-right">1,100.00</td>
+                            <td class="text-right">1,695.10</td>
+                            <td class="text-right">22,000</td>
+                            <td class="text-right">33,902</td>
+                            <td class="text-right text-green">
+                                +11,902
+                            </td>
+                            <td class="text-right text-green">
+                                +54.1%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>12</td>
+                            <td style="font-weight:600; color:var(--text-primary)">ITC</td>
+                            <td class="text-right">100</td>
+                            <td class="text-right">320.00</td>
+                            <td class="text-right">325.80</td>
+                            <td class="text-right">32,000</td>
+                            <td class="text-right">32,580</td>
+                            <td class="text-right text-green">
+                                +580
+                            </td>
+                            <td class="text-right text-green">
+                                +1.8%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>13</td>
+                            <td style="font-weight:600; color:var(--text-primary)">ASIANPAINT</td>
+                            <td class="text-right">12</td>
+                            <td class="text-right">3,200.00</td>
+                            <td class="text-right">2,401.10</td>
+                            <td class="text-right">38,400</td>
+                            <td class="text-right">28,813</td>
+                            <td class="text-right text-red">
+                                -9,587
+                            </td>
+                            <td class="text-right text-red">
+                                -25.0%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>14</td>
+                            <td style="font-weight:600; color:var(--text-primary)">HDFCBANK</td>
+                            <td class="text-right">30</td>
+                            <td class="text-right">1,520.00</td>
+                            <td class="text-right">941.10</td>
+                            <td class="text-right">45,600</td>
+                            <td class="text-right">28,233</td>
+                            <td class="text-right text-red">
+                                -17,367
+                            </td>
+                            <td class="text-right text-red">
+                                -38.1%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-buy">BUY</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>15</td>
+                            <td style="font-weight:600; color:var(--text-primary)">TATAMOTORS</td>
+                            <td class="text-right">35</td>
+                            <td class="text-right">640.00</td>
+                            <td class="text-right">735.20</td>
+                            <td class="text-right">22,400</td>
+                            <td class="text-right">25,732</td>
+                            <td class="text-right text-green">
+                                +3,332
+                            </td>
+                            <td class="text-right text-green">
+                                +14.9%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>16</td>
+                            <td style="font-weight:600; color:var(--text-primary)">ADANIENT</td>
+                            <td class="text-right">10</td>
+                            <td class="text-right">2,400.00</td>
+                            <td class="text-right">2,226.40</td>
+                            <td class="text-right">24,000</td>
+                            <td class="text-right">22,264</td>
+                            <td class="text-right text-red">
+                                -1,736
+                            </td>
+                            <td class="text-right text-red">
+                                -7.2%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-exit">EXIT</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>17</td>
+                            <td style="font-weight:600; color:var(--text-primary)">TATASTEEL</td>
+                            <td class="text-right">100</td>
+                            <td class="text-right">115.00</td>
+                            <td class="text-right">197.06</td>
+                            <td class="text-right">11,500</td>
+                            <td class="text-right">19,706</td>
+                            <td class="text-right text-green">
+                                +8,206
+                            </td>
+                            <td class="text-right text-green">
+                                +71.4%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>18</td>
+                            <td style="font-weight:600; color:var(--text-primary)">WIPRO</td>
+                            <td class="text-right">60</td>
+                            <td class="text-right">420.00</td>
+                            <td class="text-right">230.72</td>
+                            <td class="text-right">25,200</td>
+                            <td class="text-right">13,843</td>
+                            <td class="text-right text-red">
+                                -11,357
+                            </td>
+                            <td class="text-right text-red">
+                                -45.1%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-exit">EXIT</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>19</td>
+                            <td style="font-weight:600; color:var(--text-primary)">BAJFINANCE</td>
+                            <td class="text-right">8</td>
+                            <td class="text-right">6,800.00</td>
+                            <td class="text-right">981.70</td>
+                            <td class="text-right">54,400</td>
+                            <td class="text-right">7,854</td>
+                            <td class="text-right text-red">
+                                -46,546
+                            </td>
+                            <td class="text-right text-red">
+                                -85.6%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>20</td>
+                            <td style="font-weight:600; color:var(--text-primary)">NESTLEIND</td>
+                            <td class="text-right">3</td>
+                            <td class="text-right">22,000.00</td>
+                            <td class="text-right">1,303.30</td>
+                            <td class="text-right">66,000</td>
+                            <td class="text-right">3,910</td>
+                            <td class="text-right text-red">
+                                -62,090
+                            </td>
+                            <td class="text-right text-red">
+                                -94.1%
+                            </td>
+                            <td class="text-center">
+                                
+                                <span class="badge badge-hold">HOLD</span>
+                                
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mutual Funds Tab -->
+        <div id="tab-mf" class="tab-content">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fund Name</th>
+                            <th>Category</th>
+                            <th class="text-right">Invested</th>
+                            <th class="text-right">Current</th>
+                            <th class="text-right">P&L</th>
+                            <th class="text-right">XIRR %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Parag Parikh Flexi Cap Fund - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">150,000</td>
+                            <td class="text-right">228,500</td>
+                            <td class="text-right text-green">
+                                +78,500
+                            </td>
+                            <td class="text-right text-green">
+                                22.4%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>2</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Axis Small Cap Fund - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">100,000</td>
+                            <td class="text-right">172,800</td>
+                            <td class="text-right text-green">
+                                +72,800
+                            </td>
+                            <td class="text-right text-green">
+                                28.3%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>3</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Mirae Asset Large Cap Fund - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">120,000</td>
+                            <td class="text-right">168,200</td>
+                            <td class="text-right text-green">
+                                +48,200
+                            </td>
+                            <td class="text-right text-green">
+                                18.6%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>4</td>
+                            <td style="font-weight:500; color:var(--text-primary)">HDFC Mid-Cap Opportunities Fund - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">80,000</td>
+                            <td class="text-right">115,600</td>
+                            <td class="text-right text-green">
+                                +35,600
+                            </td>
+                            <td class="text-right text-green">
+                                19.8%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>5</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Kotak Corporate Bond Fund - Direct Growth</td>
+                            <td><span class="text-accent">Debt</span></td>
+                            <td class="text-right">100,000</td>
+                            <td class="text-right">112,800</td>
+                            <td class="text-right text-green">
+                                +12,800
+                            </td>
+                            <td class="text-right text-green">
+                                7.8%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>6</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Motilal Oswal Nasdaq 100 FOF - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">75,000</td>
+                            <td class="text-right">98,400</td>
+                            <td class="text-right text-green">
+                                +23,400
+                            </td>
+                            <td class="text-right text-green">
+                                16.5%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>7</td>
+                            <td style="font-weight:500; color:var(--text-primary)">ICICI Pru Technology Fund - Direct Growth</td>
+                            <td><span class="text-accent">Equity</span></td>
+                            <td class="text-right">60,000</td>
+                            <td class="text-right">91,200</td>
+                            <td class="text-right text-green">
+                                +31,200
+                            </td>
+                            <td class="text-right text-green">
+                                24.1%
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>8</td>
+                            <td style="font-weight:500; color:var(--text-primary)">SBI Equity Hybrid Fund - Direct Growth</td>
+                            <td><span class="text-accent">Hybrid</span></td>
+                            <td class="text-right">50,000</td>
+                            <td class="text-right">62,500</td>
+                            <td class="text-right text-green">
+                                +12,500
+                            </td>
+                            <td class="text-right text-green">
+                                14.2%
+                            </td>
+                        </tr>
+                        
+                        <tr style="font-weight:700; border-top: 2px solid var(--border);">
+                            <td></td>
+                            <td>TOTAL</td>
+                            <td></td>
+                            <td class="text-right">735,000</td>
+                            <td class="text-right">1,050,000</td>
+                            <td class="text-right text-green">
+                                +315,000
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NPS Tab -->
+        
+        <div id="tab-nps" class="tab-content">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+                <div class="kpi-card">
+                    <div class="kpi-label">NPS Corpus</div>
+                    <div class="kpi-value">₹3.50 L</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Contribution</div>
+                    <div class="kpi-value">₹300,000</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Growth</div>
+                    <div class="kpi-value text-green">
+                        +50,000
+                    </div>
+                </div>
+                
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Scheme / Tier</th>
+                            <th>Asset Class</th>
+                            <th>Fund Manager</th>
+                            <th class="text-right">NAV</th>
+                            <th class="text-right">Units</th>
+                            <th class="text-right">Contribution</th>
+                            <th class="text-right">Current Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Tier I</td>
+                            <td>
+                                <span class="badge badge-buy">E — Equity</span>
+                                
+                            </td>
+                            <td>SBI Pension Funds</td>
+                            <td class="text-right">42.3150</td>
+                            <td class="text-right">4,725.6800</td>
+                            <td class="text-right">180,000</td>
+                            <td class="text-right" style="font-weight:600;">₹200,000</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>2</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Tier I</td>
+                            <td>
+                                <span class="badge badge-hold">C — Corp Bonds</span>
+                                
+                            </td>
+                            <td>SBI Pension Funds</td>
+                            <td class="text-right">28.7640</td>
+                            <td class="text-right">2,610.4200</td>
+                            <td class="text-right">60,000</td>
+                            <td class="text-right" style="font-weight:600;">₹75,100</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>3</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Tier I</td>
+                            <td>
+                                <span class="badge badge-hold">G — Govt Sec</span>
+                                
+                            </td>
+                            <td>SBI Pension Funds</td>
+                            <td class="text-right">22.1080</td>
+                            <td class="text-right">3,385.9000</td>
+                            <td class="text-right">60,000</td>
+                            <td class="text-right" style="font-weight:600;">₹74,900</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top:12px; font-size:12px; color:var(--text-secondary);">PRAN: 110012345678
+                 • Statement date: 31-Mar-2025
+            </p>
+            
+        </div>
+        
+
+        <!-- EPFO Tab -->
+        
+        <div id="tab-epfo" class="tab-content">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+                <div class="kpi-card">
+                    <div class="kpi-label">EPF Balance</div>
+                    <div class="kpi-value">₹7.05 L</div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-label">Interest Earned</div>
+                    <div class="kpi-value text-green">₹42,300</div>
+                </div>
+                
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Establishment</th>
+                            <th>UAN</th>
+                            <th>Member ID</th>
+                            <th class="text-right">Employee Share</th>
+                            <th class="text-right">Employer Share</th>
+                            <th class="text-right">Pension Share</th>
+                            <th class="text-right">Total Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>1</td>
+                            <td style="font-weight:500; color:var(--text-primary)">Acme Technologies Pvt Ltd</td>
+                            <td>100123456789</td>
+                            <td>KN/BLR/0012345/001</td>
+                            <td class="text-right">285,000</td>
+                            <td class="text-right">285,000</td>
+                            <td class="text-right">135,000</td>
+                            <td class="text-right" style="font-weight:600;">₹705,000</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top:12px; font-size:12px; color:var(--text-secondary);">
+                Statement date: 31-Mar-2025
+            </p>
+            
+        </div>
+        
+
+        <!-- Market Movers Tab -->
+        <div id="tab-movers" class="tab-content">
+            
+            <h3 style="color:var(--green); margin-bottom:12px;">📈 Top Gainers</h3>
+            <div class="table-wrapper" style="margin-bottom:24px;">
+                <table>
+                    <thead><tr><th>Symbol</th><th class="text-right">Price</th><th class="text-right">Change</th></tr></thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td style="font-weight:600">RELIANCE</td>
+                            <td class="text-right">1,450.80</td>
+                            <td class="text-right text-green">+0.51%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">ICICIBANK</td>
+                            <td class="text-right">1,406.10</td>
+                            <td class="text-right text-green">+0.69%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">HINDUNILVR</td>
+                            <td class="text-right">2,424.20</td>
+                            <td class="text-right text-green">+2.96%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">ITC</td>
+                            <td class="text-right">325.80</td>
+                            <td class="text-right text-green">+5.03%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">BHARTIARTL</td>
+                            <td class="text-right">2,038.40</td>
+                            <td class="text-right text-green">+2.31%</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            <h3 style="color:var(--red); margin-bottom:12px;">📉 Top Losers</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Symbol</th><th class="text-right">Price</th><th class="text-right">Change</th></tr></thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td style="font-weight:600">TRENT</td>
+                            <td class="text-right">4,113.80</td>
+                            <td class="text-right text-red">-0.42%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">HEROMOTOCO</td>
+                            <td class="text-right">5,753.50</td>
+                            <td class="text-right text-red">-0.22%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">EICHERMOT</td>
+                            <td class="text-right">7,177.50</td>
+                            <td class="text-right text-red">-0.44%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">BAJAJ-AUTO</td>
+                            <td class="text-right">9,518.50</td>
+                            <td class="text-right text-red">-1.33%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-weight:600">INDUSINDBK</td>
+                            <td class="text-right">903.60</td>
+                            <td class="text-right text-red">-1.18%</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- NEWS -->
+    
+    <div class="section">
+        <h2>📰 Market News</h2>
+        <div class="news-grid">
+            
+            <div>
+                <div class="news-category">Market</div>
+                
+                <div class="news-item">
+                    <a href="https://news.google.com/rss/articles/CBMi9gFBVV95cUxQNVNSWlA2LWhxWnR3ZUpXbjFnb2VpRHJsY0VIWHFYM2ZDU2VwelRpQ21TZVd0c1NERWt2QzJyeDB0ejNlZEJrRjd0eXZFa0lEVmdXbjc3MDVVQ0NDcEhnWW9nZ1FHNmMyTVJWZ2xCcllLVl9TNGRINjBSNlJydnlwQ3NFN2o4aFpWQ29CZVVTSzFwR2ZPZHBEUGJFUlB4OWZfalJFOEZfZ0c1Vnl2V3FramxjUk1WR0JPLXdVSEd2RWI3eXdGNHNUWHRiQThWSE43OWd6V3ZUS0Fib0FZRXYzVWVVel9PMVdaZ1U2Mi1jRDFGZ0I3bkHSAfwBQVVfeXFMT3g2MXYtVWpacTV4d3UwWmNlWUFsZ2djbEQtLVA0VDdnUG5xTERBV0JBbVBzYkd2cG9RWkhsSm5vMjFxaHhOWjJTNGF3d0MyREtmNW5NNzVRMTc5TUhRS2taNXNKSFRTYVd2aFBmMlhjU1NSOG1aUVdGLWIyN2dKaFQxUUJVNG1fVXhrWTlHQ1BYS1ZDbzZ3dklVT3hOMUY3U0NrV1JrLUd2RldHSWtYZlhGcXNuaVhpZllUWnNtYTJzSnV5YWlyVy01cFJmYXBENFlJR0NkbU9hcXdIak5TT2dsMVo3S0xZWW1DWWhmUWoyMlNyT2VBb3hNN2hI?oc=5" target="_blank">RBI keeps repo rate unchanged at 5.25% - thehindu.com</a>
+                </div>
+                
+                <div class="news-item">
+                    <a href="https://news.google.com/rss/articles/CBMiyAFBVV95cUxNeVFlbld5WGtXQnVDU1g1QWFXYW9LZktqOWlfb3MtT3MyamVRZHU2aHo5TDQ5VjAtaW1EeGJaazdqcTFKeWZfSm1zQnJGcnZzeHFpVVdUTmFra0VpRWV2Qy1ZS0QxNkpfbUJNbVhRZUUxdHg0bndId2hYQzRUam9VNzR5UWlJUlJiZ3Zpc000ZzAzaW93cjkwekFJX0UtcFZ6MnVMdUw0dFRjVi1Ba2R6Z1ZqV1JxcXhXWmhOOHJ2VVEyeTRBU04yWNIBzgFBVV95cUxNbkhiYUd3X3Awd2ttbjlQRGJwXzI0dHVYbGczdEVoQWc1YTFSeFBadmdyeG9feS1iLVlGSThEQjdVSVpodVFqaEdEcUFnbERTMUlaY1M3T29YenBoalUxM3pzWUppSjlpbXhIakF5T25mMGZzNzZiY05ZOHl3NEV5QmhRNGtmZ3pwU1ViWkZWRmhSak5iY0xNUk1ERU0yX2RuaDhaS0d5NHR3Y0xNeEd5X09sb1YyTW8wbXZLeFFvdlZtcXpyZ3lvQ2RJQ0tGdw?oc=5" target="_blank">NSE Q3 Results: Profit falls 37% YoY to Rs 2,408 crore - The Economic Times</a>
+                </div>
+                
+                <div class="news-item">
+                    <a href="https://news.google.com/rss/articles/CBMixAFBVV95cUxOZnhuZlVRaU54aGlqNTNBNnFHcV91c3VaVFlmaEgyRHRQZnI1ajdBYWxEWll0Z1ZGSi1zSzNEVVJiZ3pvQkVGSko3YkduMVRXckhxUzEtRGJNTndyaDVBUlNwVy1lUERGdFM1X2VKS085MFNGeGdrcFJ2WTNCRTVoNElHU2RuMjctVVhUNmJnWk10UjJEME5hc2dCVEZqekFEc1lIMWxFRU1zaE5Xb1dEd2NXSkhCemJVcXhUQ1RNRWJnN21Q?oc=5" target="_blank">Gold and Silver Technical Analysis: Key Support Holds Amid Rising Volatility - FXEmpire</a>
+                </div>
+                
+                <div class="news-item">
+                    <a href="https://news.google.com/rss/articles/CBMi9gFBVV95cUxQX2xjMzB2dS1pYnlpVkR0ay1lSXFxQnJZSV8yXzYwMGxrQjA3LUxaZTJXYUtrMEtsUTloXy1HNGV6TG95UzFvOVVkSkFoVnQ0YTIzRWF3NFpHcXhXeXRSbXBLVHRKYXZPNmstOXB5UTdZTDA4aUZqUFA1TnlJYkhyekxST1c1dS1wTnp2ZXllSXBwRGZyQW9HOE5QNEVkNkJBMTZCWTkyWWtoX3h2cnVEdEdWY0pPVy1JMUtYWC1vbE5ibHdDWHZRVTFVTjNvdDFpdUwyTVdnXzB4VHVHSGlnUXdjXzVQVnBKOWh3dXVuYXJ5Tmp0eVHSAfsBQVVfeXFMTVRmNU9hbHoyWVMya0lzb0tIVGVVZnFPR2t1emhNOWJ4NFlYdFJIZ2E4OVpiYldqMF9rLTVjNnE1TzJ4RnNjelA2WllXVmlDNzFWWTZKakZxZGxFTEhRaDJ2NVBTT0hNUDhNVGw4ajd0aUtHc0F6VDVycW44ZHZHU2lEa3JJZG1vODdKVXNWMEY5U2RCc1NZWU80QWhNc1BmRElUdEhFd3RfdnFWX1pnTEdlNi16SURpUXFvbU1KQWhwcTZ5b2hXU05kOXpvdlN6alJ4cWIydVRBVWstZURfVzUzOVVEbFBWVmV2QkRzeXpZVWp1WWhxd1l4b1k?oc=5" target="_blank">Google, Amazon, Meta, Microsoft spending more on AI in 2026 than India will spend on entire country - India Today</a>
+                </div>
+                
+                <div class="news-item">
+                    <a href="https://news.google.com/rss/articles/CBMi3gFBVV95cUxQSFJETUNGTEJ1R3FuMGpoQTZGWTk5T0xNTGpSbmhWdjFhYmxHY2U4OGl6UWRSLTBNa0k1WjhtTDF2UW9QWkJvYWNiMFhvM1hQeVZfby1kdGdxNTFhcmREU2YyU2VDbkVmeU9rU0N0dXBZLUVYWTk1QmY4YWtrR2ZIN2dPZ3R2TjhDT1FoU1BmME1OQl9pZWYtQUVkb0FMeVU2N1BKRmJaU2h1dWY5c0hVTXdKcGVIcEttODhvcVhDaW5PTFgxVFBhdERHSmZONDRTMFVqWEwtbTRlYnczdXfSAeMBQVVfeXFMTkxNVUxFQ0NHc2hOM0lmLW5UTUpMRGJDQ3AyTkU1TzRham1jVFV3MFdUWHhtUzd4NjZPb09YWUFTWDI1cjF5azRQSWtuN0hiSmtvaDFmRG5GRXhEY3JxdzlFcnU2eEFKU0xYTGw5MGZaZm0yWVBYLTFFWGsyTUtpSGI1d2ZNRTdXcm5VQXZXMHZtYTdTbExXRGI0eG5IZXQ2dm1DQnpiTE0zWnRZaDBvTmoxLVljZ2NoN2FlcDJyYnNBV0VsWDJpNVZJMXplRkViMl8zSlg0QjIwWGZHeDk3dEVXSlU?oc=5" target="_blank">Financial bids received for IDBI Bank privatisation; will be evaluated: DIPAM secy - Moneycontrol</a>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Generated by <a href="https://github.com/kustonaut/WealthPulse" target="_blank">WealthPulse</a>
+        • 07 Feb 2026, 03:11 AM
+        • Data from yfinance • Not financial advice
+    </div>
+</div>
+
+<script>
+// ── THEME TOGGLE ────────────────────────────────────────────
+(function initTheme() {
+    const saved = localStorage.getItem('wp_theme');
+    if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+    updateThemeButton();
+})();
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('wp_theme', next);
+    updateThemeButton();
+    // Re-render charts with new colors
+    rebuildCharts();
+    showToast(next === 'dark' ? '🌙 Dark mode' : '☀️ Light mode', 'info');
+}
+
+function updateThemeButton() {
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+    if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+}
+
+// ── TOAST NOTIFICATION ──────────────────────────────────────
+function showToast(message, type = 'info') {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// ── TAB SWITCHING ───────────────────────────────────────────
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+// ── TABLE SEARCH / FILTER ───────────────────────────────────
+function filterTable(tableId, query) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll('tbody tr');
+    query = query.toLowerCase();
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
+// ── TABLE SORTING ───────────────────────────────────────────
+let sortDirection = {};
+function sortTable(tableId, colIdx) {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.rows);
+    const dir = sortDirection[tableId + colIdx] = !(sortDirection[tableId + colIdx]);
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim().replace(/[₹$,%+,]/g, '');
+        let bVal = b.cells[colIdx].textContent.trim().replace(/[₹$,%+,]/g, '');
+        let aNum = parseFloat(aVal), bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) return dir ? aNum - bNum : bNum - aNum;
+        return dir ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+// ── EMAIL MODAL ─────────────────────────────────────────────
+function showEmailModal() {
+    document.getElementById('emailModal').classList.add('show');
+}
+function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('show');
+}
+function copyCmd(cmd) {
+    navigator.clipboard.writeText(cmd).then(() => showToast('📋 Copied to clipboard!', 'success'));
+}
+function sendEmailViaMailto() {
+    // Build a plain-text summary from the dashboard data
+    const subject = encodeURIComponent('WealthPulse Portfolio Summary — ' + '07 Feb 2026');
+    const lines = [
+        'WealthPulse Portfolio Summary',
+        '07 Feb 2026',
+        '',
+        'Net Worth: ₹48.28 L',
+        'Equity: ₹7.72 L (20 stocks)',
+        'Mutual Funds: ₹10.50 L (8 funds)',
+    ];
+    
+    lines.push('US Holdings: $3.9K');
+    
+    
+    lines.push('NPS Corpus: ₹3.50 L');
+    
+    
+    lines.push('EPF Balance: ₹7.05 L');
+    
+    lines.push('');
+    lines.push('P&L: +₹2,473 (0.3%)');
+    
+    lines.push('FIRE Progress: 10% of ₹5.00 Cr');
+    
+    lines.push('');
+    lines.push('Generated by WealthPulse');
+    const body = encodeURIComponent(lines.join('\n'));
+    const recipient = '';
+    window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_self');
+    closeEmailModal();
+    showToast('📧 Opening mail client...', 'info');
+}
+
+// ── EXCEL DOWNLOAD ──────────────────────────────────────────
+function downloadExcel() {
+    showToast('📊 Generating Excel report...', 'info');
+    setTimeout(() => _buildAndDownloadXLS(), 100);
+}
+
+function _buildAndDownloadXLS() {
+    // Build multi-sheet XLS using HTML table format (opens natively in Excel)
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>`;
+
+    const sheets = [];
+    let sheetBodies = '';
+
+    // --- Sheet 1: Summary ---
+    sheets.push('Summary');
+    sheetBodies += `<div id="Summary"><table>
+        <tr><td colspan="2" style="font-weight:bold;font-size:16px">WealthPulse Portfolio Report</td></tr>
+        <tr><td colspan="2">Generated: 07 Feb 2026, 03:11 AM</td></tr>
+        <tr><td></td></tr>
+        <tr><td style="font-weight:bold">Net Worth</td><td>48.28 L</td></tr>
+        <tr><td style="font-weight:bold">Equity Portfolio</td><td>7.72 L</td></tr>
+        <tr><td style="font-weight:bold">Mutual Funds</td><td>10.50 L</td></tr>
+        <tr><td style="font-weight:bold">US Holdings (USD)</td><td>3.9K</td></tr>
+        <tr><td style="font-weight:bold">NPS Corpus</td><td>3.50 L</td></tr>
+        <tr><td style="font-weight:bold">EPF Balance</td><td>7.05 L</td></tr>
+        <tr><td></td></tr>
+        <tr><td style="font-weight:bold">Total P&L</td><td>+2,473 (0.3%)</td></tr>
+        <tr><td style="font-weight:bold">XIRR (MF avg)</td><td>19.0%</td></tr>
+        <tr><td style="font-weight:bold">FIRE Progress</td><td>10% of 5.00 Cr</td></tr>
+    </table></div>`;
+
+    // --- Sheet 2: Stocks ---
+    sheets.push('Stocks');
+    sheetBodies += `<div id="Stocks"><table>
+        <tr><th>#</th><th>Symbol</th><th>Qty</th><th>Avg Price</th><th>CMP</th><th>Invested</th><th>Current</th><th>P&amp;L</th><th>P&amp;L %</th><th>Verdict</th><th>Sector</th><th>Broker</th></tr>
+        <tr>
+            <td>1</td><td>SBIN</td><td>80</td>
+            <td>540.00</td><td>1,066.40</td>
+            <td>43,200</td><td>85,312</td>
+            <td>42,112</td><td>97.5%</td>
+            <td>BUY</td><td>Banking</td><td>Zerodha</td>
+        </tr><tr>
+            <td>2</td><td>MARUTI</td><td>5</td>
+            <td>9,800.00</td><td>14,997.00</td>
+            <td>49,000</td><td>74,985</td>
+            <td>25,985</td><td>53.0%</td>
+            <td>HOLD</td><td>Auto</td><td>Zerodha</td>
+        </tr><tr>
+            <td>3</td><td>ICICIBANK</td><td>50</td>
+            <td>920.00</td><td>1,406.10</td>
+            <td>46,000</td><td>70,305</td>
+            <td>24,305</td><td>52.8%</td>
+            <td>BUY</td><td>Banking</td><td>Groww</td>
+        </tr><tr>
+            <td>4</td><td>TITAN</td><td>15</td>
+            <td>2,980.00</td><td>4,141.00</td>
+            <td>44,700</td><td>62,115</td>
+            <td>17,415</td><td>39.0%</td>
+            <td>BUY</td><td>Consumer</td><td>Groww</td>
+        </tr><tr>
+            <td>5</td><td>INFY</td><td>40</td>
+            <td>1,380.00</td><td>1,507.10</td>
+            <td>55,200</td><td>60,284</td>
+            <td>5,084</td><td>9.2%</td>
+            <td>HOLD</td><td>IT</td><td>Zerodha</td>
+        </tr><tr>
+            <td>6</td><td>TCS</td><td>15</td>
+            <td>3,380.00</td><td>2,941.60</td>
+            <td>50,700</td><td>44,124</td>
+            <td>-6,576</td><td>-13.0%</td>
+            <td>HOLD</td><td>IT</td><td>Zerodha</td>
+        </tr><tr>
+            <td>7</td><td>BHARTIARTL</td><td>20</td>
+            <td>850.00</td><td>2,038.40</td>
+            <td>17,000</td><td>40,768</td>
+            <td>23,768</td><td>139.8%</td>
+            <td>BUY MORE</td><td>Telecom</td><td>Zerodha</td>
+        </tr><tr>
+            <td>8</td><td>LT</td><td>10</td>
+            <td>2,850.00</td><td>4,068.10</td>
+            <td>28,500</td><td>40,681</td>
+            <td>12,181</td><td>42.7%</td>
+            <td>BUY</td><td>Infrastructure</td><td>Zerodha</td>
+        </tr><tr>
+            <td>9</td><td>HCLTECH</td><td>25</td>
+            <td>1,280.00</td><td>1,593.70</td>
+            <td>32,000</td><td>39,842</td>
+            <td>7,842</td><td>24.5%</td>
+            <td>BUY</td><td>IT</td><td>Groww</td>
+        </tr><tr>
+            <td>10</td><td>RELIANCE</td><td>25</td>
+            <td>2,450.00</td><td>1,450.80</td>
+            <td>61,250</td><td>36,270</td>
+            <td>-24,980</td><td>-40.8%</td>
+            <td>BUY MORE</td><td>Energy</td><td>Groww</td>
+        </tr><tr>
+            <td>11</td><td>SUNPHARMA</td><td>20</td>
+            <td>1,100.00</td><td>1,695.10</td>
+            <td>22,000</td><td>33,902</td>
+            <td>11,902</td><td>54.1%</td>
+            <td>HOLD</td><td>Pharma</td><td>Groww</td>
+        </tr><tr>
+            <td>12</td><td>ITC</td><td>100</td>
+            <td>320.00</td><td>325.80</td>
+            <td>32,000</td><td>32,580</td>
+            <td>580</td><td>1.8%</td>
+            <td>HOLD</td><td>FMCG</td><td>Groww</td>
+        </tr><tr>
+            <td>13</td><td>ASIANPAINT</td><td>12</td>
+            <td>3,200.00</td><td>2,401.10</td>
+            <td>38,400</td><td>28,813</td>
+            <td>-9,587</td><td>-25.0%</td>
+            <td>HOLD</td><td>Consumer</td><td>Groww</td>
+        </tr><tr>
+            <td>14</td><td>HDFCBANK</td><td>30</td>
+            <td>1,520.00</td><td>941.10</td>
+            <td>45,600</td><td>28,233</td>
+            <td>-17,367</td><td>-38.1%</td>
+            <td>BUY</td><td>Banking</td><td>Groww</td>
+        </tr><tr>
+            <td>15</td><td>TATAMOTORS</td><td>35</td>
+            <td>640.00</td><td>735.20</td>
+            <td>22,400</td><td>25,732</td>
+            <td>3,332</td><td>14.9%</td>
+            <td>HOLD</td><td>Auto</td><td>Zerodha</td>
+        </tr><tr>
+            <td>16</td><td>ADANIENT</td><td>10</td>
+            <td>2,400.00</td><td>2,226.40</td>
+            <td>24,000</td><td>22,264</td>
+            <td>-1,736</td><td>-7.2%</td>
+            <td>EXIT</td><td>Conglomerate</td><td>Zerodha</td>
+        </tr><tr>
+            <td>17</td><td>TATASTEEL</td><td>100</td>
+            <td>115.00</td><td>197.06</td>
+            <td>11,500</td><td>19,706</td>
+            <td>8,206</td><td>71.4%</td>
+            <td>HOLD</td><td>Metals</td><td>Zerodha</td>
+        </tr><tr>
+            <td>18</td><td>WIPRO</td><td>60</td>
+            <td>420.00</td><td>230.72</td>
+            <td>25,200</td><td>13,843</td>
+            <td>-11,357</td><td>-45.1%</td>
+            <td>EXIT</td><td>IT</td><td>Groww</td>
+        </tr><tr>
+            <td>19</td><td>BAJFINANCE</td><td>8</td>
+            <td>6,800.00</td><td>981.70</td>
+            <td>54,400</td><td>7,854</td>
+            <td>-46,546</td><td>-85.6%</td>
+            <td>HOLD</td><td>Finance</td><td>Zerodha</td>
+        </tr><tr>
+            <td>20</td><td>NESTLEIND</td><td>3</td>
+            <td>22,000.00</td><td>1,303.30</td>
+            <td>66,000</td><td>3,910</td>
+            <td>-62,090</td><td>-94.1%</td>
+            <td>HOLD</td><td>FMCG</td><td>Groww</td>
+        </tr>
+    </table></div>`;
+
+    // --- Sheet 3: Mutual Funds ---
+    sheets.push('Mutual Funds');
+    sheetBodies += `<div id="MutualFunds"><table>
+        <tr><th>#</th><th>Fund Name</th><th>Category</th><th>Invested</th><th>Current</th><th>P&amp;L</th><th>XIRR %</th></tr>
+        <tr>
+            <td>1</td><td>Parag Parikh Flexi Cap Fund - Direct Growth</td><td>Equity</td>
+            <td>150,000</td><td>228,500</td>
+            <td>78,500</td><td>22.4%</td>
+        </tr><tr>
+            <td>2</td><td>Axis Small Cap Fund - Direct Growth</td><td>Equity</td>
+            <td>100,000</td><td>172,800</td>
+            <td>72,800</td><td>28.3%</td>
+        </tr><tr>
+            <td>3</td><td>Mirae Asset Large Cap Fund - Direct Growth</td><td>Equity</td>
+            <td>120,000</td><td>168,200</td>
+            <td>48,200</td><td>18.6%</td>
+        </tr><tr>
+            <td>4</td><td>HDFC Mid-Cap Opportunities Fund - Direct Growth</td><td>Equity</td>
+            <td>80,000</td><td>115,600</td>
+            <td>35,600</td><td>19.8%</td>
+        </tr><tr>
+            <td>5</td><td>Kotak Corporate Bond Fund - Direct Growth</td><td>Debt</td>
+            <td>100,000</td><td>112,800</td>
+            <td>12,800</td><td>7.8%</td>
+        </tr><tr>
+            <td>6</td><td>Motilal Oswal Nasdaq 100 FOF - Direct Growth</td><td>Equity</td>
+            <td>75,000</td><td>98,400</td>
+            <td>23,400</td><td>16.5%</td>
+        </tr><tr>
+            <td>7</td><td>ICICI Pru Technology Fund - Direct Growth</td><td>Equity</td>
+            <td>60,000</td><td>91,200</td>
+            <td>31,200</td><td>24.1%</td>
+        </tr><tr>
+            <td>8</td><td>SBI Equity Hybrid Fund - Direct Growth</td><td>Hybrid</td>
+            <td>50,000</td><td>62,500</td>
+            <td>12,500</td><td>14.2%</td>
+        </tr>
+        <tr><td></td><td style="font-weight:bold">TOTAL</td><td></td>
+            <td style="font-weight:bold">735,000</td>
+            <td style="font-weight:bold">1,050,000</td>
+            <td style="font-weight:bold">315,000</td><td></td></tr>
+    </table></div>`;
+
+    
+    // --- Sheet 4: NPS ---
+    sheets.push('NPS');
+    sheetBodies += `<div id="NPS"><table>
+        <tr><th>#</th><th>Scheme</th><th>Asset Class</th><th>Fund Manager</th><th>NAV</th><th>Units</th><th>Contribution</th><th>Current Value</th></tr>
+        <tr>
+            <td>1</td><td>Tier I</td><td>E</td><td>SBI Pension Funds</td>
+            <td>42.3150</td><td>4,725.6800</td>
+            <td>180,000</td><td>200,000</td>
+        </tr><tr>
+            <td>2</td><td>Tier I</td><td>C</td><td>SBI Pension Funds</td>
+            <td>28.7640</td><td>2,610.4200</td>
+            <td>60,000</td><td>75,100</td>
+        </tr><tr>
+            <td>3</td><td>Tier I</td><td>G</td><td>SBI Pension Funds</td>
+            <td>22.1080</td><td>3,385.9000</td>
+            <td>60,000</td><td>74,900</td>
+        </tr>
+    </table></div>`;
+    
+
+    
+    // --- Sheet 5: EPFO ---
+    sheets.push('EPFO');
+    sheetBodies += `<div id="EPFO"><table>
+        <tr><th>#</th><th>Establishment</th><th>UAN</th><th>Member ID</th><th>Employee Share</th><th>Employer Share</th><th>Pension Share</th><th>Total Balance</th><th>Interest Earned</th></tr>
+        <tr>
+            <td>1</td><td>Acme Technologies Pvt Ltd</td><td>100123456789</td><td>KN/BLR/0012345/001</td>
+            <td>285,000</td>
+            <td>285,000</td>
+            <td>135,000</td>
+            <td>705,000</td>
+            <td>42,300</td>
+        </tr>
+    </table></div>`;
+    
+
+    // Build sheet definitions
+    let sheetXml = sheets.map(s => `<x:ExcelWorksheet><x:Name>${s}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`).join('');
+    html += sheetXml;
+    html += `</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>`;
+    html += sheetBodies;
+    html += `</body></html>`;
+
+    // Download
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `WealthPulse_Report_07_Feb_2026.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Excel report downloaded!', 'success');
+}
+
+// ── CHARTS ──────────────────────────────────────────────────
+const chartColors = ['#58a6ff', '#3fb950', '#f0883e', '#bc8cff', '#39d2c0', '#d29922', '#f85149', '#8b949e'];
+let assetChart, sectorChart;
+
+function buildCharts() {
+    const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim();
+
+    const assetCtx = document.getElementById('assetPieChart');
+    if (assetCtx) {
+        assetChart = new Chart(assetCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Indian Equity", "Mutual Funds", "US Equity", "NPS", "EPF", "EPF", "PPF", "FD"],
+                datasets: [{
+                    data: [771523, 1050000, 351826, 350000, 705000, 800000, 500000, 300000],
+                    backgroundColor: chartColors.slice(0, 8),
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: textColor, font: { size: 12 } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ₹${(ctx.raw/100000).toFixed(1)}L (${((ctx.raw/4828349.0)*100).toFixed(1)}%)` } }
+                }
+            }
+        });
+    }
+
+    const sectorCtx = document.getElementById('sectorPieChart');
+    if (sectorCtx) {
+        sectorChart = new Chart(sectorCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Banking", "IT", "Auto", "Consumer", "Telecom", "Infrastructure", "FMCG", "Energy", "Others"],
+                datasets: [{
+                    data: [183850, 158094, 100717, 90928, 40768, 40681, 36490, 36270, 83726],
+                    backgroundColor: chartColors.concat(['#636e72','#00b894','#e17055','#6c5ce7','#fd79a8']).slice(0, 9),
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: textColor, font: { size: 11 } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ₹${(ctx.raw/100000).toFixed(1)}L` } }
+                }
+            }
+        });
+    }
+}
+
+function rebuildCharts() {
+    if (assetChart) assetChart.destroy();
+    if (sectorChart) sectorChart.destroy();
+    buildCharts();
+}
+
+buildCharts();
+</script>
+</body>
+</html>
