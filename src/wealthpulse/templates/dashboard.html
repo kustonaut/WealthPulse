@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WealthPulse — Portfolio Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2333;
+            --bg-hover: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #b1bac4;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --green-bg: #0d2818;
+            --red: #f85149;
+            --red-bg: #2d0a0a;
+            --yellow: #d29922;
+            --yellow-bg: #2d2200;
+            --purple: #bc8cff;
+            --orange: #f0883e;
+            --teal: #39d2c0;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-card: #ffffff;
+            --bg-hover: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+            --border: #d1d5db;
+            --accent: #2563eb;
+            --green: #16a34a;
+            --green-bg: #dcfce7;
+            --red: #dc2626;
+            --red-bg: #fee2e2;
+            --yellow: #ca8a04;
+            --yellow-bg: #fef9c3;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header .meta { color: var(--text-muted); font-size: 14px; }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); }
+        .kpi-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+        .kpi-card .sub { font-size: 13px; color: var(--text-secondary); }
+        .kpi-card.green .value { color: var(--green); }
+        .kpi-card.red .value { color: var(--red); }
+
+        /* Section */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Charts grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .chart-card h3 { font-size: 15px; color: var(--text-secondary); margin-bottom: 12px; }
+        .chart-card canvas { max-height: 300px; }
+
+        /* Tables */
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        tr:hover { background: var(--bg-hover); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-green { color: var(--green) !important; }
+        .text-red { color: var(--red) !important; }
+        .text-yellow { color: var(--yellow) !important; }
+        .text-accent { color: var(--accent) !important; }
+        .text-orange { color: var(--orange) !important; }
+        .text-purple { color: var(--purple) !important; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-buy { background: var(--green-bg); color: var(--green); }
+        .badge-hold { background: var(--yellow-bg); color: var(--yellow); }
+        .badge-exit { background: var(--red-bg); color: var(--red); }
+
+        /* FIRE Progress */
+        .fire-bar-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+            margin: 12px 0;
+            position: relative;
+        }
+        .fire-bar {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            transition: width 1s ease;
+        }
+
+        /* Index ticker strip */
+        .ticker-strip {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 12px 0;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+        .ticker-strip::-webkit-scrollbar { display: none; }
+        .ticker-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            flex-shrink: 0;
+            min-width: 140px;
+        }
+        .ticker-item .name { font-size: 11px; color: var(--text-muted); }
+        .ticker-item .price { font-size: 16px; font-weight: 600; }
+        .ticker-item .change { font-size: 12px; }
+
+        /* Marquee Ticker */
+        .marquee-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
+            height: 36px;
+        }
+        .marquee-container::before,
+        .marquee-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .marquee-container::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--bg-secondary), transparent);
+        }
+        .marquee-container::after {
+            right: 0;
+            background: linear-gradient(270deg, var(--bg-secondary), transparent);
+        }
+        .marquee-track {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            width: max-content;
+            animation: marquee-scroll var(--marquee-speed, 60s) linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+        .marquee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .marquee-item .m-symbol {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .marquee-item .m-price {
+            color: var(--text-secondary);
+        }
+        .marquee-item .m-change {
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .marquee-item .m-dot {
+            color: var(--text-muted);
+            opacity: 0.3;
+            margin: 0 4px;
+        }
+        @keyframes marquee-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* News */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+        .news-category { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .news-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .news-item:last-child { border-bottom: none; }
+        .news-item a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+        .news-item a:hover { color: var(--accent); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Sort */
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { color: var(--accent); }
+        th.sortable::after { content: ' ⇅'; font-size: 10px; opacity: 0.5; }
+
+        /* Search / Filter */
+        .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            width: 250px;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .action-btn:active { transform: translateY(0); }
+        .action-btn .icon { font-size: 16px; }
+        .action-btn.primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .action-btn.primary:hover { opacity: 0.9; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-left: 4px solid var(--green); }
+        .toast.error { border-left: 4px solid var(--red); }
+        .toast.info { border-left: 4px solid var(--accent); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.25s;
+        }
+        .modal-overlay.show .modal { transform: scale(1); }
+        .modal h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
+        .modal .cmd-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 13px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .modal .cmd-box button {
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .modal .cmd-box button:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+            .kpi-card .value { font-size: 22px; }
+            .header { flex-direction: column; gap: 12px; }
+            .action-bar { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <h1>💰 WealthPulse</h1>
+            <div class="meta">{{ profile_name }} • {{ generated_date }}</div>
+        </div>
+        <div class="action-bar">
+            <button class="action-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle dark/light mode">
+                <span class="icon" id="themeIcon">🌙</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+            <button class="action-btn" onclick="showEmailModal()" title="Send email summary">
+                <span class="icon">📧</span>
+                <span>Email</span>
+            </button>
+            <button class="action-btn primary" onclick="downloadExcel()" title="Download Excel report">
+                <span class="icon">📥</span>
+                <span>Excel</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- EMAIL MODAL -->
+    <div class="modal-overlay" id="emailModal" onclick="if(event.target===this)closeEmailModal()">
+        <div class="modal">
+            <h3>📧 Send Portfolio Summary</h3>
+            {% if email_configured %}
+            <p>Send an instant email brief with live prices, P&L, and market movers to <strong>{{ email_recipient }}</strong>.</p>
+            <p style="font-size:12px; color:var(--text-muted)">Uses your configured SMTP settings from config.yaml.</p>
+            <div class="cmd-box">
+                <span>wealthpulse email</span>
+                <button onclick="copyCmd('wealthpulse email')">📋 Copy</button>
+            </div>
+            <div class="modal-actions">
+                <button class="action-btn" onclick="closeEmailModal()">Cancel</button>
+                <button class="action-btn primary" onclick="sendEmailViaMailto()">📧 Open Mail Client</button>
+            </div>
+            {% else %}
+            <p>Email is not configured yet. Set it up to receive portfolio summaries directly in your inbox.</p>
+            <div class="cmd-box">
+                <span>wealthpulse setup</span>
+                <button onclick="copyCmd('wealthpulse setup')">📋 Copy</button>
+            </div>
+            <p>Or run the email command after setup:</p>
+            <div class="cmd-box">
+                <span>wealthpulse email</span>
+                <button onclick="copyCmd('wealthpulse email')">📋 Copy</button>
+            </div>
+            <div class="modal-actions">
+                <button class="action-btn" onclick="closeEmailModal()">Close</button>
+                <button class="action-btn primary" onclick="sendEmailViaMailto()">📧 Open Mail Client</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STOCK MARQUEE -->
+    {% if holdings %}
+    <div class="marquee-container" style="--marquee-speed: {{ [holdings|length * 3, 30] | max }}s">
+        <div class="marquee-track">
+            {% for h in holdings %}
+            <span class="marquee-item">
+                <span class="m-symbol">{{ h.symbol }}</span>
+                <span class="m-price">₹{{ "{:,.2f}".format(h.cmp) if h.cmp > 0 else "{:,.2f}".format(h.avg_price) }}</span>
+                <span class="m-change {{ 'text-green' if h.pnl_pct >= 0 else 'text-red' }}">
+                    {{ "+" if h.pnl_pct >= 0 else "" }}{{ "{:.1f}".format(h.pnl_pct) }}%
+                    {{ "▲" if h.pnl_pct > 0 else "▼" if h.pnl_pct < 0 else "–" }}
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            {% endfor %}
+            {# Duplicate for seamless loop #}
+            {% for h in holdings %}
+            <span class="marquee-item">
+                <span class="m-symbol">{{ h.symbol }}</span>
+                <span class="m-price">₹{{ "{:,.2f}".format(h.cmp) if h.cmp > 0 else "{:,.2f}".format(h.avg_price) }}</span>
+                <span class="m-change {{ 'text-green' if h.pnl_pct >= 0 else 'text-red' }}">
+                    {{ "+" if h.pnl_pct >= 0 else "" }}{{ "{:.1f}".format(h.pnl_pct) }}%
+                    {{ "▲" if h.pnl_pct > 0 else "▼" if h.pnl_pct < 0 else "–" }}
+                </span>
+                <span class="m-dot">•</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- INDEX TICKER STRIP -->
+    {% if index_data %}
+    <div class="ticker-strip">
+        {% for name, d in index_data.items() %}
+        <div class="ticker-item">
+            <div class="name">{{ name }}</div>
+            <div class="price">{{ "{:,.2f}".format(d.price) }}</div>
+            <div class="change {{ 'text-green' if d.change_pct >= 0 else 'text-red' }}">
+                {{ "+" if d.change_pct >= 0 else "" }}{{ "{:.2f}".format(d.change_pct) }}%
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">💰 Net Worth</div>
+            <div class="value">{{ currency }}{{ net_worth_display }}</div>
+            <div class="sub">{{ holdings_count }} stocks + {{ mf_count }} MFs</div>
+        </div>
+        <div class="kpi-card {{ 'green' if total_pnl >= 0 else 'red' }}">
+            <div class="label">📈 Total P&L</div>
+            <div class="value">{{ "+" if total_pnl >= 0 else "" }}{{ currency }}{{ pnl_display }}</div>
+            <div class="sub">{{ "{:.1f}".format(pnl_pct) }}% overall return</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">📊 Equity Portfolio</div>
+            <div class="value">{{ currency }}{{ equity_display }}</div>
+            <div class="sub">{{ stocks_fetched }}/{{ holdings_count }} prices live</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">📊 Mutual Funds</div>
+            <div class="value">{{ currency }}{{ mf_display }}</div>
+            <div class="sub">XIRR avg {{ "{:.1f}".format(mf_xirr_avg) }}%</div>
+        </div>
+        {% if fire_target %}
+        <div class="kpi-card">
+            <div class="label">🔥 FIRE Progress</div>
+            <div class="value">{{ "{:.0f}".format(fire_pct) }}%</div>
+            <div class="sub">{{ currency }}{{ fire_target_display }} by age {{ fire_target_age }}</div>
+        </div>
+        {% endif %}
+        {% if us_value_display %}
+        <div class="kpi-card">
+            <div class="label">🇺🇸 US Holdings</div>
+            <div class="value">${{ us_value_display }}</div>
+            <div class="sub">{{ us_count }} stock(s)</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- FIRE PROGRESS BAR -->
+    {% if fire_target %}
+    <div class="section">
+        <h2>🔥 FIRE Journey — {{ currency }}{{ fire_target_display }} by age {{ fire_target_age }}</h2>
+        <div class="fire-bar-container">
+            <div class="fire-bar" style="width: {{ [fire_pct, 100] | min }}%">
+                {{ "{:.1f}".format(fire_pct) }}% — {{ years_to_fire }} years left
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            <span>₹0</span>
+            <span>Current: {{ currency }}{{ net_worth_display }}</span>
+            <span>Target: {{ currency }}{{ fire_target_display }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CHARTS -->
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Asset Allocation</h3>
+            <canvas id="assetPieChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Sector Breakdown</h3>
+            <canvas id="sectorPieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- TABS: Stocks | Mutual Funds | NPS | EPFO | Market Movers -->
+    <div class="section">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('stocks')">📊 Stocks ({{ holdings_count }})</div>
+            <div class="tab" onclick="switchTab('mf')">📈 Mutual Funds ({{ mf_count }})</div>
+            {% if nps_holdings %}<div class="tab" onclick="switchTab('nps')">🏛️ NPS ({{ nps_holdings|length }})</div>{% endif %}
+            {% if epfo_holdings %}<div class="tab" onclick="switchTab('epfo')">🏦 EPFO ({{ epfo_holdings|length }})</div>{% endif %}
+            <div class="tab" onclick="switchTab('movers')">🔥 Market Movers</div>
+        </div>
+
+        <!-- Stocks Tab -->
+        <div id="tab-stocks" class="tab-content active">
+            <div class="controls">
+                <input type="text" class="search-input" id="stockSearch" placeholder="🔍 Search stocks..." oninput="filterTable('stocksTable', this.value)">
+            </div>
+            <div class="table-wrapper">
+                <table id="stocksTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('stocksTable', 0)">#</th>
+                            <th class="sortable" onclick="sortTable('stocksTable', 1)">Symbol</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 2)">Qty</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 3)">Avg Price</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 4)">CMP</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 5)">Invested</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 6)">Current</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 7)">P&L</th>
+                            <th class="sortable text-right" onclick="sortTable('stocksTable', 8)">P&L %</th>
+                            <th class="sortable text-center" onclick="sortTable('stocksTable', 9)">Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in holdings %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight:600; color:var(--text-primary)">{{ h.symbol }}</td>
+                            <td class="text-right">{{ h.qty }}</td>
+                            <td class="text-right">{{ "{:,.2f}".format(h.avg_price) }}</td>
+                            <td class="text-right">{{ "{:,.2f}".format(h.cmp) if h.cmp > 0 else "—" }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.invested) }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.current) if h.current > 0 else "—" }}</td>
+                            <td class="text-right {{ 'text-green' if h.pnl >= 0 else 'text-red' }}">
+                                {{ "+" if h.pnl >= 0 else "" }}{{ "{:,.0f}".format(h.pnl) }}
+                            </td>
+                            <td class="text-right {{ 'text-green' if h.pnl_pct >= 0 else 'text-red' }}">
+                                {{ "+" if h.pnl_pct >= 0 else "" }}{{ "{:.1f}".format(h.pnl_pct) }}%
+                            </td>
+                            <td class="text-center">
+                                {% if h.verdict == 'BUY' or h.verdict == 'BUY MORE' %}
+                                <span class="badge badge-buy">{{ h.verdict }}</span>
+                                {% elif h.verdict == 'EXIT' %}
+                                <span class="badge badge-exit">{{ h.verdict }}</span>
+                                {% else %}
+                                <span class="badge badge-hold">{{ h.verdict }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mutual Funds Tab -->
+        <div id="tab-mf" class="tab-content">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fund Name</th>
+                            <th>Category</th>
+                            <th class="text-right">Invested</th>
+                            <th class="text-right">Current</th>
+                            <th class="text-right">P&L</th>
+                            <th class="text-right">XIRR %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mf in mutual_funds %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight:500; color:var(--text-primary)">{{ mf.name }}</td>
+                            <td><span class="text-accent">{{ mf.category }}</span></td>
+                            <td class="text-right">{{ "{:,.0f}".format(mf.invested) }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(mf.current) }}</td>
+                            <td class="text-right {{ 'text-green' if mf.current >= mf.invested else 'text-red' }}">
+                                {{ "+" if mf.current >= mf.invested else "" }}{{ "{:,.0f}".format(mf.current - mf.invested) }}
+                            </td>
+                            <td class="text-right {{ 'text-green' if mf.xirr >= 0 else 'text-red' }}">
+                                {{ "{:.1f}".format(mf.xirr) }}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="font-weight:700; border-top: 2px solid var(--border);">
+                            <td></td>
+                            <td>TOTAL</td>
+                            <td></td>
+                            <td class="text-right">{{ "{:,.0f}".format(mf_total_inv) }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(mf_total_cur) }}</td>
+                            <td class="text-right {{ 'text-green' if mf_total_cur >= mf_total_inv else 'text-red' }}">
+                                {{ "+" if mf_total_cur >= mf_total_inv else "" }}{{ "{:,.0f}".format(mf_total_cur - mf_total_inv) }}
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NPS Tab -->
+        {% if nps_holdings %}
+        <div id="tab-nps" class="tab-content">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+                <div class="kpi-card">
+                    <div class="kpi-label">NPS Corpus</div>
+                    <div class="kpi-value">₹{{ nps_total_display }}</div>
+                </div>
+                {% if nps_contribution > 0 %}
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Contribution</div>
+                    <div class="kpi-value">₹{{ "{:,.0f}".format(nps_contribution) }}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Growth</div>
+                    <div class="kpi-value {{ 'text-green' if nps_total > nps_contribution else 'text-red' }}">
+                        {{ "+" if nps_total > nps_contribution else "" }}{{ "{:,.0f}".format(nps_total - nps_contribution) }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Scheme / Tier</th>
+                            <th>Asset Class</th>
+                            <th>Fund Manager</th>
+                            <th class="text-right">NAV</th>
+                            <th class="text-right">Units</th>
+                            <th class="text-right">Contribution</th>
+                            <th class="text-right">Current Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in nps_holdings %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight:500; color:var(--text-primary)">{{ h.scheme_name or 'Tier I' }}</td>
+                            <td>
+                                {% if h.asset_class == 'E' %}<span class="badge badge-buy">E — Equity</span>
+                                {% elif h.asset_class == 'C' %}<span class="badge badge-hold">C — Corp Bonds</span>
+                                {% elif h.asset_class == 'G' %}<span class="badge badge-hold">G — Govt Sec</span>
+                                {% elif h.asset_class == 'A' %}<span class="badge badge-exit">A — Alternate</span>
+                                {% else %}{{ h.asset_class or '—' }}{% endif %}
+                            </td>
+                            <td>{{ h.fund_manager or '—' }}</td>
+                            <td class="text-right">{{ "{:,.4f}".format(h.nav) if h.nav else '—' }}</td>
+                            <td class="text-right">{{ "{:,.4f}".format(h.units) if h.units else '—' }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.contribution_total) if h.contribution_total else '—' }}</td>
+                            <td class="text-right" style="font-weight:600;">₹{{ "{:,.0f}".format(h.current_value) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if nps_holdings[0].pran %}
+            <p style="margin-top:12px; font-size:12px; color:var(--text-secondary);">PRAN: {{ nps_holdings[0].pran }}
+                {% if nps_holdings[0].statement_date %} • Statement date: {{ nps_holdings[0].statement_date }}{% endif %}
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- EPFO Tab -->
+        {% if epfo_holdings %}
+        <div id="tab-epfo" class="tab-content">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+                <div class="kpi-card">
+                    <div class="kpi-label">EPF Balance</div>
+                    <div class="kpi-value">₹{{ epfo_total_display }}</div>
+                </div>
+                {% if epfo_interest > 0 %}
+                <div class="kpi-card">
+                    <div class="kpi-label">Interest Earned</div>
+                    <div class="kpi-value text-green">₹{{ "{:,.0f}".format(epfo_interest) }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Establishment</th>
+                            <th>UAN</th>
+                            <th>Member ID</th>
+                            <th class="text-right">Employee Share</th>
+                            <th class="text-right">Employer Share</th>
+                            <th class="text-right">Pension Share</th>
+                            <th class="text-right">Total Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in epfo_holdings %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight:500; color:var(--text-primary)">{{ h.establishment or '—' }}</td>
+                            <td>{{ h.uan or '—' }}</td>
+                            <td>{{ h.member_id or '—' }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.employee_share) if h.employee_share else '—' }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.employer_share) if h.employer_share else '—' }}</td>
+                            <td class="text-right">{{ "{:,.0f}".format(h.pension_share) if h.pension_share else '—' }}</td>
+                            <td class="text-right" style="font-weight:600;">₹{{ "{:,.0f}".format(h.total_balance) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if epfo_holdings[0].statement_date %}
+            <p style="margin-top:12px; font-size:12px; color:var(--text-secondary);">
+                Statement date: {{ epfo_holdings[0].statement_date }}
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Market Movers Tab -->
+        <div id="tab-movers" class="tab-content">
+            {% if top_gainers %}
+            <h3 style="color:var(--green); margin-bottom:12px;">📈 Top Gainers</h3>
+            <div class="table-wrapper" style="margin-bottom:24px;">
+                <table>
+                    <thead><tr><th>Symbol</th><th class="text-right">Price</th><th class="text-right">Change</th></tr></thead>
+                    <tbody>
+                        {% for g in top_gainers %}
+                        <tr>
+                            <td style="font-weight:600">{{ g.symbol }}</td>
+                            <td class="text-right">{{ "{:,.2f}".format(g.price) }}</td>
+                            <td class="text-right text-green">+{{ "{:.2f}".format(g.change_pct) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% if top_losers %}
+            <h3 style="color:var(--red); margin-bottom:12px;">📉 Top Losers</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Symbol</th><th class="text-right">Price</th><th class="text-right">Change</th></tr></thead>
+                    <tbody>
+                        {% for l in top_losers %}
+                        <tr>
+                            <td style="font-weight:600">{{ l.symbol }}</td>
+                            <td class="text-right">{{ "{:,.2f}".format(l.price) }}</td>
+                            <td class="text-right text-red">{{ "{:.2f}".format(l.change_pct) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- NEWS -->
+    {% if news %}
+    <div class="section">
+        <h2>📰 Market News</h2>
+        <div class="news-grid">
+            {% for category, items in news.items() %}
+            <div>
+                <div class="news-category">{{ category }}</div>
+                {% for item in items %}
+                <div class="news-item">
+                    <a href="{{ item.link }}" target="_blank">{{ item.title }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Generated by <a href="https://github.com/kustonaut/WealthPulse" target="_blank">WealthPulse</a>
+        • {{ generated_datetime }}
+        • Data from yfinance • Not financial advice
+    </div>
+</div>
+
+<script>
+// ── THEME TOGGLE ────────────────────────────────────────────
+(function initTheme() {
+    const saved = localStorage.getItem('wp_theme');
+    if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+    updateThemeButton();
+})();
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('wp_theme', next);
+    updateThemeButton();
+    // Re-render charts with new colors
+    rebuildCharts();
+    showToast(next === 'dark' ? '🌙 Dark mode' : '☀️ Light mode', 'info');
+}
+
+function updateThemeButton() {
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+    if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+}
+
+// ── TOAST NOTIFICATION ──────────────────────────────────────
+function showToast(message, type = 'info') {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// ── TAB SWITCHING ───────────────────────────────────────────
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+// ── TABLE SEARCH / FILTER ───────────────────────────────────
+function filterTable(tableId, query) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll('tbody tr');
+    query = query.toLowerCase();
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
+// ── TABLE SORTING ───────────────────────────────────────────
+let sortDirection = {};
+function sortTable(tableId, colIdx) {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.rows);
+    const dir = sortDirection[tableId + colIdx] = !(sortDirection[tableId + colIdx]);
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim().replace(/[₹$,%+,]/g, '');
+        let bVal = b.cells[colIdx].textContent.trim().replace(/[₹$,%+,]/g, '');
+        let aNum = parseFloat(aVal), bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) return dir ? aNum - bNum : bNum - aNum;
+        return dir ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+// ── EMAIL MODAL ─────────────────────────────────────────────
+function showEmailModal() {
+    document.getElementById('emailModal').classList.add('show');
+}
+function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('show');
+}
+function copyCmd(cmd) {
+    navigator.clipboard.writeText(cmd).then(() => showToast('📋 Copied to clipboard!', 'success'));
+}
+function sendEmailViaMailto() {
+    // Build a plain-text summary from the dashboard data
+    const subject = encodeURIComponent('WealthPulse Portfolio Summary — ' + '{{ generated_date }}');
+    const lines = [
+        'WealthPulse Portfolio Summary',
+        '{{ generated_date }}',
+        '',
+        'Net Worth: {{ currency }}{{ net_worth_display }}',
+        'Equity: {{ currency }}{{ equity_display }} ({{ holdings_count }} stocks)',
+        'Mutual Funds: {{ currency }}{{ mf_display }} ({{ mf_count }} funds)',
+    ];
+    {% if us_value_display %}
+    lines.push('US Holdings: ${{ us_value_display }}');
+    {% endif %}
+    {% if nps_total_display %}
+    lines.push('NPS Corpus: {{ currency }}{{ nps_total_display }}');
+    {% endif %}
+    {% if epfo_total_display %}
+    lines.push('EPF Balance: {{ currency }}{{ epfo_total_display }}');
+    {% endif %}
+    lines.push('');
+    lines.push('P&L: {{ "+" if total_pnl >= 0 else "" }}{{ currency }}{{ pnl_display }} ({{ "{:.1f}".format(pnl_pct) }}%)');
+    {% if fire_target %}
+    lines.push('FIRE Progress: {{ "{:.0f}".format(fire_pct) }}% of {{ currency }}{{ fire_target_display }}');
+    {% endif %}
+    lines.push('');
+    lines.push('Generated by WealthPulse');
+    const body = encodeURIComponent(lines.join('\n'));
+    const recipient = '{{ email_recipient }}';
+    window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_self');
+    closeEmailModal();
+    showToast('📧 Opening mail client...', 'info');
+}
+
+// ── EXCEL DOWNLOAD ──────────────────────────────────────────
+function downloadExcel() {
+    showToast('📊 Generating Excel report...', 'info');
+    setTimeout(() => _buildAndDownloadXLS(), 100);
+}
+
+function _buildAndDownloadXLS() {
+    // Build multi-sheet XLS using HTML table format (opens natively in Excel)
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>`;
+
+    const sheets = [];
+    let sheetBodies = '';
+
+    // --- Sheet 1: Summary ---
+    sheets.push('Summary');
+    sheetBodies += `<div id="Summary"><table>
+        <tr><td colspan="2" style="font-weight:bold;font-size:16px">WealthPulse Portfolio Report</td></tr>
+        <tr><td colspan="2">Generated: {{ generated_datetime }}</td></tr>
+        <tr><td></td></tr>
+        <tr><td style="font-weight:bold">Net Worth</td><td>{{ net_worth_display }}</td></tr>
+        <tr><td style="font-weight:bold">Equity Portfolio</td><td>{{ equity_display }}</td></tr>
+        <tr><td style="font-weight:bold">Mutual Funds</td><td>{{ mf_display }}</td></tr>
+        {% if us_value_display %}<tr><td style="font-weight:bold">US Holdings (USD)</td><td>{{ us_value_display }}</td></tr>{% endif %}
+        {% if nps_total_display %}<tr><td style="font-weight:bold">NPS Corpus</td><td>{{ nps_total_display }}</td></tr>{% endif %}
+        {% if epfo_total_display %}<tr><td style="font-weight:bold">EPF Balance</td><td>{{ epfo_total_display }}</td></tr>{% endif %}
+        <tr><td></td></tr>
+        <tr><td style="font-weight:bold">Total P&L</td><td>{{ "+" if total_pnl >= 0 else "" }}{{ pnl_display }} ({{ "{:.1f}".format(pnl_pct) }}%)</td></tr>
+        <tr><td style="font-weight:bold">XIRR (MF avg)</td><td>{{ "{:.1f}".format(mf_xirr_avg) }}%</td></tr>
+        {% if fire_target %}<tr><td style="font-weight:bold">FIRE Progress</td><td>{{ "{:.0f}".format(fire_pct) }}% of {{ fire_target_display }}</td></tr>{% endif %}
+    </table></div>`;
+
+    // --- Sheet 2: Stocks ---
+    sheets.push('Stocks');
+    sheetBodies += `<div id="Stocks"><table>
+        <tr><th>#</th><th>Symbol</th><th>Qty</th><th>Avg Price</th><th>CMP</th><th>Invested</th><th>Current</th><th>P&amp;L</th><th>P&amp;L %</th><th>Verdict</th><th>Sector</th><th>Broker</th></tr>
+        {% for h in holdings %}<tr>
+            <td>{{ loop.index }}</td><td>{{ h.symbol }}</td><td>{{ h.qty }}</td>
+            <td>{{ "{:,.2f}".format(h.avg_price) }}</td><td>{{ "{:,.2f}".format(h.cmp) if h.cmp > 0 else "" }}</td>
+            <td>{{ "{:,.0f}".format(h.invested) }}</td><td>{{ "{:,.0f}".format(h.current) if h.current > 0 else "" }}</td>
+            <td>{{ "{:,.0f}".format(h.pnl) }}</td><td>{{ "{:.1f}".format(h.pnl_pct) }}%</td>
+            <td>{{ h.verdict }}</td><td>{{ h.sector }}</td><td>{{ h.broker }}</td>
+        </tr>{% endfor %}
+    </table></div>`;
+
+    // --- Sheet 3: Mutual Funds ---
+    sheets.push('Mutual Funds');
+    sheetBodies += `<div id="MutualFunds"><table>
+        <tr><th>#</th><th>Fund Name</th><th>Category</th><th>Invested</th><th>Current</th><th>P&amp;L</th><th>XIRR %</th></tr>
+        {% for mf in mutual_funds %}<tr>
+            <td>{{ loop.index }}</td><td>{{ mf.name }}</td><td>{{ mf.category }}</td>
+            <td>{{ "{:,.0f}".format(mf.invested) }}</td><td>{{ "{:,.0f}".format(mf.current) }}</td>
+            <td>{{ "{:,.0f}".format(mf.current - mf.invested) }}</td><td>{{ "{:.1f}".format(mf.xirr) }}%</td>
+        </tr>{% endfor %}
+        <tr><td></td><td style="font-weight:bold">TOTAL</td><td></td>
+            <td style="font-weight:bold">{{ "{:,.0f}".format(mf_total_inv) }}</td>
+            <td style="font-weight:bold">{{ "{:,.0f}".format(mf_total_cur) }}</td>
+            <td style="font-weight:bold">{{ "{:,.0f}".format(mf_total_cur - mf_total_inv) }}</td><td></td></tr>
+    </table></div>`;
+
+    {% if nps_holdings %}
+    // --- Sheet 4: NPS ---
+    sheets.push('NPS');
+    sheetBodies += `<div id="NPS"><table>
+        <tr><th>#</th><th>Scheme</th><th>Asset Class</th><th>Fund Manager</th><th>NAV</th><th>Units</th><th>Contribution</th><th>Current Value</th></tr>
+        {% for h in nps_holdings %}<tr>
+            <td>{{ loop.index }}</td><td>{{ h.scheme_name or 'Tier I' }}</td><td>{{ h.asset_class or '' }}</td><td>{{ h.fund_manager or '' }}</td>
+            <td>{{ "{:,.4f}".format(h.nav) if h.nav else '' }}</td><td>{{ "{:,.4f}".format(h.units) if h.units else '' }}</td>
+            <td>{{ "{:,.0f}".format(h.contribution_total) if h.contribution_total else '' }}</td><td>{{ "{:,.0f}".format(h.current_value) }}</td>
+        </tr>{% endfor %}
+    </table></div>`;
+    {% endif %}
+
+    {% if epfo_holdings %}
+    // --- Sheet 5: EPFO ---
+    sheets.push('EPFO');
+    sheetBodies += `<div id="EPFO"><table>
+        <tr><th>#</th><th>Establishment</th><th>UAN</th><th>Member ID</th><th>Employee Share</th><th>Employer Share</th><th>Pension Share</th><th>Total Balance</th><th>Interest Earned</th></tr>
+        {% for h in epfo_holdings %}<tr>
+            <td>{{ loop.index }}</td><td>{{ h.establishment or '' }}</td><td>{{ h.uan or '' }}</td><td>{{ h.member_id or '' }}</td>
+            <td>{{ "{:,.0f}".format(h.employee_share) if h.employee_share else '' }}</td>
+            <td>{{ "{:,.0f}".format(h.employer_share) if h.employer_share else '' }}</td>
+            <td>{{ "{:,.0f}".format(h.pension_share) if h.pension_share else '' }}</td>
+            <td>{{ "{:,.0f}".format(h.total_balance) }}</td>
+            <td>{{ "{:,.0f}".format(h.interest_earned) if h.interest_earned else '' }}</td>
+        </tr>{% endfor %}
+    </table></div>`;
+    {% endif %}
+
+    // Build sheet definitions
+    let sheetXml = sheets.map(s => `<x:ExcelWorksheet><x:Name>${s}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`).join('');
+    html += sheetXml;
+    html += `</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>`;
+    html += sheetBodies;
+    html += `</body></html>`;
+
+    // Download
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `WealthPulse_Report_{{ generated_date | replace(" ", "_") }}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Excel report downloaded!', 'success');
+}
+
+// ── CHARTS ──────────────────────────────────────────────────
+const chartColors = ['#58a6ff', '#3fb950', '#f0883e', '#bc8cff', '#39d2c0', '#d29922', '#f85149', '#8b949e'];
+let assetChart, sectorChart;
+
+function buildCharts() {
+    const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim();
+
+    const assetCtx = document.getElementById('assetPieChart');
+    if (assetCtx) {
+        assetChart = new Chart(assetCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ asset_labels | tojson }},
+                datasets: [{
+                    data: {{ asset_values | tojson }},
+                    backgroundColor: chartColors.slice(0, {{ asset_labels | length }}),
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: textColor, font: { size: 12 } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ₹${(ctx.raw/100000).toFixed(1)}L (${((ctx.raw/{{ net_worth_raw }})*100).toFixed(1)}%)` } }
+                }
+            }
+        });
+    }
+
+    const sectorCtx = document.getElementById('sectorPieChart');
+    if (sectorCtx) {
+        sectorChart = new Chart(sectorCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ sector_labels | tojson }},
+                datasets: [{
+                    data: {{ sector_values | tojson }},
+                    backgroundColor: chartColors.concat(['#636e72','#00b894','#e17055','#6c5ce7','#fd79a8']).slice(0, {{ sector_labels | length }}),
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { color: textColor, font: { size: 11 } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ₹${(ctx.raw/100000).toFixed(1)}L` } }
+                }
+            }
+        });
+    }
+}
+
+function rebuildCharts() {
+    if (assetChart) assetChart.destroy();
+    if (sectorChart) sectorChart.destroy();
+    buildCharts();
+}
+
+buildCharts();
+</script>
+</body>
+</html>

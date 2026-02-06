@@ -1,0 +1,390 @@
+{
+    "generated_date": "2025-02-15",
+    "stocks": {
+        "RELIANCE": {
+            "symbol": "RELIANCE",
+            "qty": 25,
+            "avg_price": 2450.00,
+            "invested": 61250,
+            "closing_price": 2920.50,
+            "closing_value": 73012.50,
+            "broker": "Groww",
+            "sector": "Energy"
+        },
+        "TCS": {
+            "symbol": "TCS",
+            "qty": 15,
+            "avg_price": 3380.00,
+            "invested": 50700,
+            "closing_price": 3985.20,
+            "closing_value": 59778.00,
+            "broker": "Zerodha",
+            "sector": "IT"
+        },
+        "HDFCBANK": {
+            "symbol": "HDFCBANK",
+            "qty": 30,
+            "avg_price": 1520.00,
+            "invested": 45600,
+            "closing_price": 1745.80,
+            "closing_value": 52374.00,
+            "broker": "Groww",
+            "sector": "Banking"
+        },
+        "INFY": {
+            "symbol": "INFY",
+            "qty": 40,
+            "avg_price": 1380.00,
+            "invested": 55200,
+            "closing_price": 1862.30,
+            "closing_value": 74492.00,
+            "broker": "Zerodha",
+            "sector": "IT"
+        },
+        "ICICIBANK": {
+            "symbol": "ICICIBANK",
+            "qty": 50,
+            "avg_price": 920.00,
+            "invested": 46000,
+            "closing_price": 1285.60,
+            "closing_value": 64280.00,
+            "broker": "Groww",
+            "sector": "Banking"
+        },
+        "BHARTIARTL": {
+            "symbol": "BHARTIARTL",
+            "qty": 20,
+            "avg_price": 850.00,
+            "invested": 17000,
+            "closing_price": 1710.40,
+            "closing_value": 34208.00,
+            "broker": "Zerodha",
+            "sector": "Telecom"
+        },
+        "WIPRO": {
+            "symbol": "WIPRO",
+            "qty": 60,
+            "avg_price": 420.00,
+            "invested": 25200,
+            "closing_price": 298.50,
+            "closing_value": 17910.00,
+            "broker": "Groww",
+            "sector": "IT"
+        },
+        "TATAMOTORS": {
+            "symbol": "TATAMOTORS",
+            "qty": 35,
+            "avg_price": 640.00,
+            "invested": 22400,
+            "closing_price": 735.20,
+            "closing_value": 25732.00,
+            "broker": "Zerodha",
+            "sector": "Auto"
+        },
+        "SUNPHARMA": {
+            "symbol": "SUNPHARMA",
+            "qty": 20,
+            "avg_price": 1100.00,
+            "invested": 22000,
+            "closing_price": 1825.40,
+            "closing_value": 36508.00,
+            "broker": "Groww",
+            "sector": "Pharma"
+        },
+        "SBIN": {
+            "symbol": "SBIN",
+            "qty": 80,
+            "avg_price": 540.00,
+            "invested": 43200,
+            "closing_price": 785.30,
+            "closing_value": 62824.00,
+            "broker": "Zerodha",
+            "sector": "Banking"
+        },
+        "ITC": {
+            "symbol": "ITC",
+            "qty": 100,
+            "avg_price": 320.00,
+            "invested": 32000,
+            "closing_price": 458.60,
+            "closing_value": 45860.00,
+            "broker": "Groww",
+            "sector": "FMCG"
+        },
+        "LT": {
+            "symbol": "LT",
+            "qty": 10,
+            "avg_price": 2850.00,
+            "invested": 28500,
+            "closing_price": 3420.80,
+            "closing_value": 34208.00,
+            "broker": "Zerodha",
+            "sector": "Infrastructure"
+        },
+        "ASIANPAINT": {
+            "symbol": "ASIANPAINT",
+            "qty": 12,
+            "avg_price": 3200.00,
+            "invested": 38400,
+            "closing_price": 2290.50,
+            "closing_value": 27486.00,
+            "broker": "Groww",
+            "sector": "Consumer"
+        },
+        "BAJFINANCE": {
+            "symbol": "BAJFINANCE",
+            "qty": 8,
+            "avg_price": 6800.00,
+            "invested": 54400,
+            "closing_price": 7650.30,
+            "closing_value": 61202.40,
+            "broker": "Zerodha",
+            "sector": "Finance"
+        },
+        "TITAN": {
+            "symbol": "TITAN",
+            "qty": 15,
+            "avg_price": 2980.00,
+            "invested": 44700,
+            "closing_price": 3520.10,
+            "closing_value": 52801.50,
+            "broker": "Groww",
+            "sector": "Consumer"
+        },
+        "MARUTI": {
+            "symbol": "MARUTI",
+            "qty": 5,
+            "avg_price": 9800.00,
+            "invested": 49000,
+            "closing_price": 12350.00,
+            "closing_value": 61750.00,
+            "broker": "Zerodha",
+            "sector": "Auto"
+        },
+        "HCLTECH": {
+            "symbol": "HCLTECH",
+            "qty": 25,
+            "avg_price": 1280.00,
+            "invested": 32000,
+            "closing_price": 1920.60,
+            "closing_value": 48015.00,
+            "broker": "Groww",
+            "sector": "IT"
+        },
+        "ADANIENT": {
+            "symbol": "ADANIENT",
+            "qty": 10,
+            "avg_price": 2400.00,
+            "invested": 24000,
+            "closing_price": 2180.40,
+            "closing_value": 21804.00,
+            "broker": "Zerodha",
+            "sector": "Conglomerate"
+        },
+        "NESTLEIND": {
+            "symbol": "NESTLEIND",
+            "qty": 3,
+            "avg_price": 22000.00,
+            "invested": 66000,
+            "closing_price": 23805.00,
+            "closing_value": 71415.00,
+            "broker": "Groww",
+            "sector": "FMCG"
+        },
+        "TATASTEEL": {
+            "symbol": "TATASTEEL",
+            "qty": 100,
+            "avg_price": 115.00,
+            "invested": 11500,
+            "closing_price": 142.80,
+            "closing_value": 14280.00,
+            "broker": "Zerodha",
+            "sector": "Metals"
+        }
+    },
+    "mutual_funds": [
+        {
+            "name": "Parag Parikh Flexi Cap Fund - Direct Growth",
+            "category": "Equity",
+            "sub_category": "Flexi Cap",
+            "invested": 150000,
+            "current": 228500,
+            "xirr": 22.4,
+            "units": 2850.5
+        },
+        {
+            "name": "Mirae Asset Large Cap Fund - Direct Growth",
+            "category": "Equity",
+            "sub_category": "Large Cap",
+            "invested": 120000,
+            "current": 168200,
+            "xirr": 18.6,
+            "units": 1680.2
+        },
+        {
+            "name": "Axis Small Cap Fund - Direct Growth",
+            "category": "Equity",
+            "sub_category": "Small Cap",
+            "invested": 100000,
+            "current": 172800,
+            "xirr": 28.3,
+            "units": 2420.8
+        },
+        {
+            "name": "HDFC Mid-Cap Opportunities Fund - Direct Growth",
+            "category": "Equity",
+            "sub_category": "Mid Cap",
+            "invested": 80000,
+            "current": 115600,
+            "xirr": 19.8,
+            "units": 810.4
+        },
+        {
+            "name": "ICICI Pru Technology Fund - Direct Growth",
+            "category": "Equity",
+            "sub_category": "Sectoral",
+            "invested": 60000,
+            "current": 91200,
+            "xirr": 24.1,
+            "units": 420.6
+        },
+        {
+            "name": "SBI Equity Hybrid Fund - Direct Growth",
+            "category": "Hybrid",
+            "sub_category": "Aggressive Hybrid",
+            "invested": 50000,
+            "current": 62500,
+            "xirr": 14.2,
+            "units": 240.3
+        },
+        {
+            "name": "Kotak Corporate Bond Fund - Direct Growth",
+            "category": "Debt",
+            "sub_category": "Corporate Bond",
+            "invested": 100000,
+            "current": 112800,
+            "xirr": 7.8,
+            "units": 3200.1
+        },
+        {
+            "name": "Motilal Oswal Nasdaq 100 FOF - Direct Growth",
+            "category": "Equity",
+            "sub_category": "International",
+            "invested": 75000,
+            "current": 98400,
+            "xirr": 16.5,
+            "units": 3150.8
+        }
+    ],
+    "us_holdings": [
+        {
+            "symbol": "MSFT",
+            "name": "Microsoft Corporation",
+            "qty": 5,
+            "avg_price": 320.00,
+            "value_usd": 2085.00,
+            "source": "Fidelity"
+        },
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc",
+            "qty": 8,
+            "avg_price": 175.00,
+            "value_usd": 1800.00,
+            "source": "Fidelity"
+        }
+    ],
+    "nps_holdings": [
+        {
+            "pran": "110012345678",
+            "scheme_name": "Tier I",
+            "fund_manager": "SBI Pension Funds",
+            "asset_class": "E",
+            "nav": 42.3150,
+            "units": 4725.680,
+            "contribution_total": 180000,
+            "current_value": 200000,
+            "statement_date": "31-Mar-2025"
+        },
+        {
+            "pran": "110012345678",
+            "scheme_name": "Tier I",
+            "fund_manager": "SBI Pension Funds",
+            "asset_class": "C",
+            "nav": 28.7640,
+            "units": 2610.420,
+            "contribution_total": 60000,
+            "current_value": 75100,
+            "statement_date": "31-Mar-2025"
+        },
+        {
+            "pran": "110012345678",
+            "scheme_name": "Tier I",
+            "fund_manager": "SBI Pension Funds",
+            "asset_class": "G",
+            "nav": 22.1080,
+            "units": 3385.900,
+            "contribution_total": 60000,
+            "current_value": 74900,
+            "statement_date": "31-Mar-2025"
+        }
+    ],
+    "epfo_holdings": [
+        {
+            "uan": "100123456789",
+            "member_id": "KN/BLR/0012345/001",
+            "establishment": "Acme Technologies Pvt Ltd",
+            "employee_share": 285000,
+            "employer_share": 285000,
+            "pension_share": 135000,
+            "total_balance": 705000,
+            "interest_earned": 42300,
+            "statement_date": "31-Mar-2025"
+        }
+    ],
+    "verdicts": {
+        "RELIANCE": "BUY MORE",
+        "TCS": "HOLD",
+        "HDFCBANK": "BUY",
+        "INFY": "HOLD",
+        "ICICIBANK": "BUY",
+        "BHARTIARTL": "BUY MORE",
+        "WIPRO": "EXIT",
+        "TATAMOTORS": "HOLD",
+        "SUNPHARMA": "HOLD",
+        "SBIN": "BUY",
+        "ITC": "HOLD",
+        "LT": "BUY",
+        "ASIANPAINT": "HOLD",
+        "BAJFINANCE": "HOLD",
+        "TITAN": "BUY",
+        "MARUTI": "HOLD",
+        "HCLTECH": "BUY",
+        "ADANIENT": "EXIT",
+        "NESTLEIND": "HOLD",
+        "TATASTEEL": "HOLD"
+    },
+    "yahoo_symbol_map": {
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "HDFCBANK": "HDFCBANK.NS",
+        "INFY": "INFY.NS",
+        "ICICIBANK": "ICICIBANK.NS",
+        "BHARTIARTL": "BHARTIARTL.NS",
+        "WIPRO": "WIPRO.NS",
+        "TATAMOTORS": "TATAMTRDVR.BO",
+        "SUNPHARMA": "SUNPHARMA.NS",
+        "SBIN": "SBIN.NS",
+        "ITC": "ITC.NS",
+        "LT": "LT.NS",
+        "ASIANPAINT": "ASIANPAINT.NS",
+        "BAJFINANCE": "BAJFINANCE.NS",
+        "TITAN": "TITAN.NS",
+        "MARUTI": "MARUTI.NS",
+        "HCLTECH": "HCLTECH.NS",
+        "ADANIENT": "ADANIENT.NS",
+        "NESTLEIND": "NESTLEIND.NS",
+        "TATASTEEL": "TATASTEEL.NS"
+    },
+    "errors": []
+}
