@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Carousel — WealthPulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #e8e0d8;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 48px 0;
+  }
+
+  .slide {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ─── Playdough palette ─── */
+  .bg-mint   { background: #b8e6d0; }
+  .bg-peach  { background: #fcd5ce; }
+  .bg-lilac  { background: #d5c6f0; }
+  .bg-butter { background: #fef0c3; }
+  .bg-sky    { background: #bde0fe; }
+  .bg-coral  { background: #f4a89a; }
+
+  /* Doughy blob shapes */
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.35;
+    filter: blur(2px);
+  }
+
+  /* Playdough card */
+  .dough-card {
+    background: #ffffffcc;
+    border-radius: 32px;
+    padding: 48px 56px;
+    box-shadow:
+      0 8px 0 #00000012,
+      0 16px 40px #00000015,
+      inset 0 2px 0 #ffffff88;
+    position: relative;
+    z-index: 2;
+  }
+
+  .dough-card-dark {
+    background: #1e1e2eee;
+    color: #f0ece4;
+  }
+
+  /* Doughy pill badges */
+  .pill {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 18px;
+    margin: 4px;
+    box-shadow: 0 4px 0 #00000015, inset 0 1px 0 #ffffff44;
+  }
+
+  .pill-green  { background: #a3d9b1; color: #1a5c2e; }
+  .pill-blue   { background: #a0c4f1; color: #1a3d6e; }
+  .pill-pink   { background: #f5b7b1; color: #7a2020; }
+  .pill-purple { background: #c6b3e3; color: #3e2069; }
+  .pill-orange { background: #f9cb8b; color: #6b3a10; }
+  .pill-teal   { background: #89d4cf; color: #165551; }
+
+  h1 {
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  h2 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  p {
+    font-size: 24px;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+
+  .small {
+    font-size: 20px;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+
+  .emoji-big {
+    font-size: 96px;
+    line-height: 1;
+  }
+
+  .slide-num {
+    position: absolute;
+    bottom: 32px;
+    right: 40px;
+    font-size: 18px;
+    font-weight: 800;
+    opacity: 0.3;
+    z-index: 5;
+  }
+
+  /* Swipe hint dots */
+  .dots {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 5;
+  }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #00000020;
+  }
+  .dot.active {
+    background: #00000055;
+    width: 28px;
+    border-radius: 8px;
+  }
+
+  .screenshot {
+    border-radius: 20px;
+    box-shadow:
+      0 8px 0 #00000010,
+      0 20px 60px #00000025;
+    max-width: 100%;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+  }
+
+  .stat-box {
+    background: #ffffff55;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 4px 0 #00000010, inset 0 1px 0 #ffffff66;
+  }
+
+  .stat-box .num {
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .stat-box .label {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  .arrow-list {
+    list-style: none;
+    text-align: left;
+    width: 100%;
+  }
+
+  .arrow-list li {
+    font-size: 26px;
+    font-weight: 700;
+    padding: 14px 0;
+    border-bottom: 3px dashed #00000012;
+    line-height: 1.4;
+  }
+
+  .arrow-list li:last-child { border: none; }
+
+  .arrow-list .arrow {
+    display: inline-block;
+    width: 36px;
+    font-size: 22px;
+  }
+
+  .wavy-divider {
+    width: 120px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 4px;
+    opacity: 0.25;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== SLIDE 1 — Title ===================== -->
+<div class="slide bg-mint" id="slide1">
+  <!-- blobs -->
+  <div class="blob" style="width:400px;height:400px;background:#6bc9a0;top:-80px;left:-100px;"></div>
+  <div class="blob" style="width:300px;height:300px;background:#89d4cf;bottom:-60px;right:-80px;"></div>
+  <div class="blob" style="width:200px;height:200px;background:#f9cb8b;top:60px;right:120px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 80px;">
+    <div class="emoji-big">🛠️</div>
+    <div style="height:24px;"></div>
+    <h1 style="color:#1a3d2e;">Friday<br>Build Log</h1>
+    <div style="height:20px;"></div>
+    <p style="color:#2a5e42;font-size:28px;">I built an open-source portfolio<br>dashboard using just Claude.</p>
+    <div style="height:28px;"></div>
+    <div>
+      <span class="pill pill-green">AI</span>
+      <span class="pill pill-blue">Python</span>
+      <span class="pill pill-orange">Open Source</span>
+    </div>
+    <div style="height:8px;"></div>
+    <div>
+      <span class="pill pill-purple">FIRE</span>
+      <span class="pill pill-teal">5 Sessions</span>
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot active"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 2 — What it does ===================== -->
+<div class="slide bg-butter" id="slide2">
+  <div class="blob" style="width:350px;height:350px;background:#f0d060;top:-60px;right:-60px;"></div>
+  <div class="blob" style="width:280px;height:280px;background:#f4a89a;bottom:40px;left:-80px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 80px;">
+    <div class="emoji-big">💰</div>
+    <div style="height:16px;"></div>
+    <h2 style="color:#5c4a10;">WealthPulse</h2>
+    <div style="height:12px;"></div>
+    <p style="color:#6b5520;font-size:26px;max-width:800px;">
+      Drop your broker statements in a folder.<br>
+      Get a beautiful dashboard back.
+    </p>
+    <div style="height:32px;"></div>
+    <div class="dough-card" style="max-width:860px;width:100%;padding:32px 40px;">
+      <ul class="arrow-list">
+        <li><span class="arrow">📊</span> 14 brokers — Groww, Zerodha, Angel One, Fidelity...</li>
+        <li><span class="arrow">🏛️</span> NPS + EPFO for holistic net worth</li>
+        <li><span class="arrow">🔥</span> FIRE tracker with goal progress bar</li>
+        <li><span class="arrow">📧</span> Daily email brief to your inbox</li>
+        <li><span class="arrow">🔒</span> 100% private — no cloud, ever</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div>
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 3 — Dashboard ===================== -->
+<div class="slide bg-sky" id="slide3">
+  <div class="blob" style="width:400px;height:400px;background:#7ec8f0;top:-100px;left:200px;"></div>
+  <div class="blob" style="width:250px;height:250px;background:#c6b3e3;bottom:-40px;right:100px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 60px;">
+    <h2 style="color:#1a3d6e;margin-bottom:8px;">The Dashboard ✨</h2>
+    <p style="color:#2a5577;font-size:22px;margin-bottom:28px;">Dark mode · Light mode · One-click toggle</p>
+    <img src="../docs/screenshots/dashboard-hero.png" class="screenshot" style="width:920px;">
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div><div class="dot"></div>
+    <div class="dot active"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 4 — Email Brief ===================== -->
+<div class="slide bg-lilac" id="slide4">
+  <div class="blob" style="width:380px;height:380px;background:#a78ed6;top:-80px;right:-60px;"></div>
+  <div class="blob" style="width:250px;height:250px;background:#f5b7b1;bottom:80px;left:-40px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 60px;display:flex;align-items:center;gap:48px;">
+    <div style="text-align:left;flex:1;min-width:340px;">
+      <h2 style="color:#3e2069;">Morning<br>Email Brief ☕</h2>
+      <div style="height:16px;"></div>
+      <p style="color:#5a3d80;font-size:23px;">
+        Portfolio value, day's P&L,<br>
+        top movers, MF summary,<br>
+        market news — delivered<br>
+        to your inbox every morning.
+      </p>
+      <div style="height:20px;"></div>
+      <span class="pill pill-purple">Automated</span>
+      <span class="pill pill-pink">Dark-themed</span>
+    </div>
+    <div style="flex:0 0 auto;">
+      <img src="../docs/screenshots/email-brief.png" class="screenshot" style="width:400px;">
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot active"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 5 — Learnings ===================== -->
+<div class="slide bg-peach" id="slide5">
+  <div class="blob" style="width:400px;height:400px;background:#f0a898;top:-100px;left:-60px;"></div>
+  <div class="blob" style="width:300px;height:300px;background:#f9cb8b;bottom:-40px;right:-40px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 72px;">
+    <h2 style="color:#6b2a1a;margin-bottom:32px;">What I Learned 🧠</h2>
+
+    <div class="dough-card" style="max-width:880px;width:100%;padding:40px 48px;">
+      <ul class="arrow-list">
+        <li><span class="arrow">🔍</span> Claude caught a <b>delisted ticker</b>, a <b>wrong price</b>, and a <b>duplicate function</b> I'd have missed</li>
+        <li><span class="arrow">🧩</span> <b>Context management</b> across sessions is the real AI-PM skill, not prompting</li>
+        <li><span class="arrow">🏗️</span> AIPM ≠ knowing how to code.<br>It's knowing <b>what to build, in what order</b></li>
+        <li><span class="arrow">🚀</span> GitHub push: init → privacy scan → commit → ship. <b>One conversation turn.</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot active"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 6 — CTA ===================== -->
+<div class="slide bg-mint" id="slide6">
+  <div class="blob" style="width:450px;height:450px;background:#6bc9a0;bottom:-120px;left:200px;"></div>
+  <div class="blob" style="width:300px;height:300px;background:#a0c4f1;top:-60px;right:-40px;"></div>
+  <div class="blob" style="width:200px;height:200px;background:#f9cb8b;top:200px;left:-40px;"></div>
+
+  <div style="text-align:center;z-index:2;padding:0 80px;">
+    <div class="stat-grid" style="max-width:700px;margin:0 auto 40px;">
+      <div class="stat-box">
+        <div class="num" style="color:#1a5c2e;">5</div>
+        <div class="label">Sessions</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" style="color:#1a3d6e;">37</div>
+        <div class="label">Files Shipped</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" style="color:#6b3a10;">14</div>
+        <div class="label">Broker Parsers</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" style="color:#7a2020;">0</div>
+        <div class="label">StackOverflow Tabs</div>
+      </div>
+    </div>
+
+    <h2 style="color:#1a3d2e;font-size:42px;">Go build something 🫶</h2>
+    <div style="height:16px;"></div>
+    <p style="color:#2a5e42;font-size:24px;">
+      MIT Licensed — grab it, fork it, make it yours
+    </p>
+    <div style="height:20px;"></div>
+    <div class="dough-card" style="display:inline-block;padding:20px 40px;">
+      <p style="font-size:26px;color:#1a3d6e;margin:0;">🔗 github.com/kustonaut/WealthPulse</p>
+    </div>
+  </div>
+
+  <div class="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+    <div class="dot active"></div>
+  </div>
+</div>
+
+</body>
+</html>
