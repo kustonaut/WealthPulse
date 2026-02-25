@@ -42,6 +42,11 @@ def send_daily_brief(config: Config, portfolio_path: str | None = None) -> bool:
     """
     Build and send the daily email brief.
 
+    Supports environment variable overrides for CI/CD:
+        GMAIL_ADDRESS      → sender email
+        GMAIL_APP_PASSWORD → app password
+        GMAIL_RECIPIENTS   → comma-separated recipient list
+
     Args:
         config: WealthPulse Config object
         portfolio_path: Path to portfolio_data.json
@@ -50,15 +55,28 @@ def send_daily_brief(config: Config, portfolio_path: str | None = None) -> bool:
         True if email sent successfully
     """
     email_cfg = config.email
-    if not email_cfg.get("enabled", False):
-        print("Email is disabled in config. Set email.enabled: true")
-        return False
 
-    sender = email_cfg.get("sender", "")
-    password = email_cfg.get("app_password", "")
-    recipients = email_cfg.get("recipients", [])
+    # Environment variable overrides (GitHub Actions)
+    env_sender = os.environ.get("GMAIL_ADDRESS")
+    env_password = os.environ.get("GMAIL_APP_PASSWORD")
+    env_recipients = os.environ.get("GMAIL_RECIPIENTS")
+
+    sender = env_sender or email_cfg.get("sender_email", "") or email_cfg.get("sender", "")
+    password = env_password or email_cfg.get("app_password", "")
+    if env_recipients:
+        recipients = [r.strip() for r in env_recipients.split(",") if r.strip()]
+    else:
+        recipients = email_cfg.get("recipients", [])
+        if isinstance(recipients, str):
+            recipients = [recipients]
     smtp_server = email_cfg.get("smtp_server", "smtp.gmail.com")
     smtp_port = email_cfg.get("smtp_port", 587)
+
+    # Check if running in CI mode (env vars provided) — override enabled check
+    ci_mode = bool(env_sender and env_password and env_recipients)
+    if not ci_mode and not email_cfg.get("enabled", False):
+        print("Email is disabled in config. Set email.enabled: true")
+        return False
 
     if not all([sender, password, recipients]):
         print("Email config incomplete. Need sender, app_password, and recipients.")

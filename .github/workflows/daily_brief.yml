@@ -1,0 +1,46 @@
+name: WealthPulse Daily Brief
+
+on:
+  schedule:
+    # 5:00 PM IST = 11:30 AM UTC
+    - cron: '30 11 * * 1-5'   # Mon-Fri only
+  workflow_dispatch:           # Manual trigger button
+
+env:
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  wealthpulse-email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Send daily brief email
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          # WealthPulse: xanaduin only
+          GMAIL_RECIPIENTS: ${{ secrets.GMAIL_ADDRESS }}
+        run: python -m wealthpulse email
+
+      - name: Upload email preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wealthpulse-preview-${{ github.run_number }}
+          path: output/email_preview.html
+          retention-days: 7
